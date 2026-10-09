@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Premier Baccarat Display v2.4</title>
+<style>
+:root{
+  --wood:#b98e67;
+  --maroon:#5a1f23;
+  --maroon-2:#4a171c;
+  --panel:#eef8ff;
+  --panel-2:#f5fbff;
+  --panel-border:#6c5054;
+  --grid:#dbe5ec;
+  --gold:#f4d17c;
+  --text:#ffffff;
+  --banker:#d72d2d;
+  --player:#216ce1;
+  --tie:#39b84c;
+  --soft:#dac8a5;
+  --black:#111;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#2a1b18;font-family:Arial,"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif}
+body{user-select:none}
+button,input{font:inherit}
+#viewport{position:fixed;inset:0;overflow:hidden;background:linear-gradient(180deg,#b79c85 0,#a58b77 100%)}
+#stage{width:1920px;height:1080px;position:relative;transform-origin:center center;flex:0 0 auto}
+.frame{position:absolute;inset:0;border:20px solid var(--wood);border-radius:10px;background:linear-gradient(180deg,var(--maroon) 0,var(--maroon-2) 100%);box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden}
+.top-stripe{position:absolute;left:0;right:0;top:0;height:16px;display:flex}
+.top-stripe .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.seg.red{background:linear-gradient(180deg,#ff5252,#cf2121)}
+.seg.blue{background:linear-gradient(180deg,#3ca3ff,#236de0)}
+.seg.green{background:linear-gradient(180deg,#8bdd5b,#41b83c)}
+.top{position:absolute;left:16px;top:28px;width:1848px;height:268px;display:grid;grid-template-columns:820px 420px 596px;gap:6px}
+.card{position:relative;background:rgba(0,0,0,.06);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+.limit-row{height:60px;display:grid;grid-template-columns:320px 1fr;gap:6px;margin-bottom:6px}
+.limit-box{min-width:0;display:flex;align-items:center;padding:0 14px;font-size:38px;line-height:1;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.35);white-space:nowrap;overflow:hidden}
+.limit-box.min{background:linear-gradient(180deg,#2f78f4,#224db2)}
+.limit-box.max{background:linear-gradient(180deg,#e34d4d,#931d22)}
+.label-big{flex:0 0 auto;font-size:15px;letter-spacing:.03em;margin-right:8px}
+.pale{background:var(--panel);border:1px solid #80929f}
+#beadWrap{height:202px}
+#beadWrap canvas,#bigWrap canvas,#bigEyeWrap canvas,#cockWrap canvas,#smallWrap canvas{width:100%;height:100%;display:block;background:var(--panel)}
+.center-top{padding:6px 8px;color:#fff;display:grid;grid-template-rows:24px 56px 40px minmax(0,1fr) 26px;gap:4px}
+.center-line{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;color:#f8ecc6;text-transform:uppercase;overflow:hidden}
+.center-brand{display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+.brand-text{max-width:100%;font-size:38px;line-height:1;font-weight:900;letter-spacing:.13em;color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.custom-logo{max-width:100%;max-height:52px;display:block;object-fit:contain}
+.custom-logo.hidden{display:none}
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.meta-pill{min-width:0;min-height:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;padding:3px 5px;overflow:hidden}
+.meta-k{max-width:100%;font-size:10px;line-height:1;color:var(--soft);font-weight:700;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.meta-v{max-width:100%;font-size:21px;line-height:1;color:#fff;font-weight:900;margin-top:1px;white-space:nowrap;overflow:hidden}
+.stat-list{min-height:0;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 82px;align-content:start;grid-auto-rows:minmax(14px,1fr);row-gap:1px;column-gap:8px;font-size:12px;line-height:1.05}
+.stat-l{min-width:0;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-v{min-width:0;color:var(--gold);text-align:right;font-weight:900;white-space:nowrap;overflow:hidden}
+.center-tools{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;overflow:hidden}
+.lang-group{display:flex;gap:4px}
+.sm-btn{height:24px;padding:0 10px;border:0;border-radius:3px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.lang-btn{background:#efefef;color:#411d1d}.lang-btn.active{background:#fff}
+.settings-btn{background:#d7bf93;color:#391919}
+.right-top{padding:0;color:#fff;display:grid;grid-template-rows:62px 1fr;gap:6px;min-width:0}
+.score-row{display:grid;grid-template-columns:168px 1fr 168px;gap:6px}
+.score-box{display:grid;grid-template-rows:26px 1fr;overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+.score-h{min-width:0;display:grid;place-items:center;background:#f0f0f0;color:#3a1c1c;font-size:13px;line-height:1;font-weight:900;text-transform:uppercase;white-space:nowrap;overflow:hidden;padding:0 3px}
+.score-v{min-width:0;display:grid;place-items:center;font-size:34px;line-height:1;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;padding:0 4px}
+.score-box.banker .score-v{background:linear-gradient(180deg,#fb5656,#cc2424)}
+.score-box.player .score-v{background:linear-gradient(180deg,#3f9eff,#225ad0)}
+.score-box.board .score-v{background:linear-gradient(180deg,#6b3638,#4f2326)}
+.tables-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;min-width:0}
+.side-table{border:1px solid rgba(255,255,255,.12);display:grid;grid-template-rows:42px 1fr;min-width:0;overflow:hidden}
+.side-head{display:grid;grid-template-columns:46px 1fr 60px}
+.side-chip{display:grid;place-items:center;font-size:28px;font-weight:900;color:#fff}
+.side-chip.banker{background:linear-gradient(180deg,#fb5757,#ca2323)}
+.side-chip.player{background:linear-gradient(180deg,#4aa7ff,#2367db)}
+.side-title{min-width:0;display:grid;place-items:center;font-size:14px;line-height:1;font-weight:900;color:#fff;background:rgba(255,255,255,.05);text-transform:uppercase;white-space:nowrap;overflow:hidden;padding:0 3px}
+.side-total{min-width:0;display:grid;place-items:center;font-size:24px;line-height:1;font-weight:900;color:var(--gold);background:rgba(0,0,0,.15);white-space:nowrap;overflow:hidden;padding:0 3px}
+.side-body{padding:4px 8px 6px;display:grid;grid-auto-rows:1fr;align-content:start}
+.side-item{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 42px minmax(72px,88px);gap:5px;align-items:center;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1;overflow:hidden}
+.side-item:last-child{border-bottom:0}
+.side-label{min-width:0;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-cur{min-width:0;text-align:center;color:#f2d89f;font-weight:700;white-space:nowrap;overflow:hidden}
+.side-val{min-width:0;text-align:right;color:#fff;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.big-zone{position:absolute;left:16px;top:302px;width:1848px;height:324px}
+#bigWrap{position:absolute;inset:0}
+.bottom-zone{position:absolute;left:16px;top:634px;width:1848px;height:366px;display:grid;grid-template-columns:620px 1fr;gap:6px}
+.left-stack{display:grid;grid-template-rows:188px 188px;gap:6px}
+.label-inside{position:absolute;color:#8b949b;font-size:16px;font-weight:700;pointer-events:none;opacity:.95;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.label-centered{left:50%;transform:translateX(-50%)}
+.footer{position:absolute;left:0;right:0;bottom:0;height:40px;background:#0f0f0f;color:#fff;display:grid;grid-template-columns:520px 1fr 320px;align-items:center;padding:0 12px;font-size:14px;font-weight:700}
+.footer-left,.footer-right{min-width:0;color:#d5bd90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.footer-center{min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;z-index:30;transition:opacity .18s ease}
+.overlay.show{opacity:1}
+.overlay.banker{background:radial-gradient(circle at center, rgba(232,66,66,.88) 0%, rgba(170,15,15,.96) 60%, rgba(78,0,0,.98) 100%)}
+.overlay.player{background:radial-gradient(circle at center, rgba(71,160,255,.88) 0%, rgba(25,85,210,.96) 60%, rgba(0,39,112,.98) 100%)}
+.overlay.tie{background:radial-gradient(circle at center, rgba(84,222,88,.88) 0%, rgba(31,156,49,.96) 60%, rgba(2,81,18,.98) 100%)}
+.overlay-inner{text-align:center;color:#fff;text-shadow:0 6px 24px rgba(0,0,0,.4)}
+.overlay-letter{font-size:300px;line-height:.9;font-weight:900;letter-spacing:.04em}
+.overlay-word{font-size:86px;line-height:1;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.overlay-sub{font-size:26px;line-height:1.2;font-weight:800;letter-spacing:.06em;margin-top:10px;min-height:1.2em;text-transform:uppercase}
+.toast{position:absolute;left:50%;bottom:54px;transform:translateX(-50%);background:#121212;color:#fff;padding:10px 16px;border-radius:6px;font-size:14px;font-weight:800;opacity:0;pointer-events:none;z-index:40;transition:opacity .15s}
+.toast.show{opacity:1}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:50;padding:20px}
+.modal.hidden{display:none}
+.modal-card{width:min(840px,92vw);max-height:92vh;overflow:auto;background:#fff;border-radius:8px;padding:22px;box-shadow:0 35px 80px rgba(0,0,0,.35)}
+.modal-title{font-size:24px;font-weight:900;color:#2e1c1c;letter-spacing:.03em}
+.modal-desc{margin:8px 0 16px;color:#666;font-size:14px;line-height:1.45}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid label{display:grid;gap:6px;font-size:12px;font-weight:800;color:#504242;text-transform:uppercase}
+.form-grid input{width:100%;padding:10px 12px;border:1px solid #cfcfcf;border-radius:4px}
+.form-grid .full{grid-column:1/-1}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.modal-btn{border:0;border-radius:4px;padding:10px 16px;font-weight:800;cursor:pointer}
+.modal-btn.primary{background:#59272a;color:#fff}
+.modal-btn.secondary{background:#ebebeb;color:#333}
+.modal-btn.danger{background:#c92a2a;color:#fff}
+.note{margin-top:12px;background:#f7f7f7;border-left:4px solid #c7ab7f;padding:10px 12px;color:#555;font-size:13px;line-height:1.45}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage">
+    <div class="frame">
+      <div class="top-stripe">
+        <div id="stripeBanker" class="seg red" style="width:33.33%">B 33.3%</div>
+        <div id="stripePlayer" class="seg blue" style="width:33.33%">P 33.3%</div>
+        <div id="stripeTie" class="seg green" style="width:33.34%">T 33.4%</div>
+      </div>
+
+      <section class="top">
+        <div class="card">
+          <div class="limit-row">
+            <div class="limit-box min"><span class="label-big" data-i18n="min">MIN</span><span id="minValue" data-fit="34,18">5</span></div>
+            <div class="limit-box max"><span class="label-big" data-i18n="max">MAX</span><span id="maxValue" data-fit="34,18">10,000</span></div>
+          </div>
+          <div id="beadWrap" class="pale"><canvas id="beadCanvas"></canvas></div>
+        </div>
+
+        <div class="card center-top">
+          <div class="center-line"><span id="tableText" data-fit="13,9">TABLE B01</span><span id="clock" data-fit="13,9">--:--:--</span></div>
+          <div class="center-brand"><img id="customLogo" class="custom-logo hidden" alt="logo" /><div id="brandText" data-fit="38,18" class="brand-text">PREMIER</div></div>
+          <div class="meta-row">
+            <div class="meta-pill"><div class="meta-k" data-i18n="shoeNumber">SHOE NUMBER</div><div id="shoeValue" data-fit="21,14" class="meta-v">001</div></div>
+            <div class="meta-pill"><div class="meta-k" data-i18n="handNumber">HAND</div><div id="handValue" data-fit="21,14" class="meta-v">000</div></div>
+          </div>
+          <div class="stat-list">
+            <div class="stat-l" data-i18n="bankerPair">Banker Pair</div><div id="statBPair" class="stat-v" data-fit="12,9">0</div>
+            <div class="stat-l" data-i18n="playerPair">Player Pair</div><div id="statPPair" class="stat-v" data-fit="12,9">0</div>
+            <div class="stat-l" data-i18n="tie">Tie</div><div id="statTie" class="stat-v" data-fit="12,9">0</div>
+            <div class="stat-l" data-i18n="currentStreak">Current Streak</div><div id="currentStreak" class="stat-v" data-fit="12,9">—</div>
+            <div class="stat-l" data-i18n="longestStreak">Longest Streak</div><div id="maxStreak" class="stat-v" data-fit="12,9">—</div>
+          </div>
+          <div class="center-tools">
+            <div class="lang-group">
+              <button id="langEn" class="sm-btn lang-btn active">EN</button>
+              <button id="langZh" class="sm-btn lang-btn">中文</button>
+            </div>
+            <button id="settingsBtn" class="sm-btn settings-btn">SETTINGS</button>
+          </div>
+        </div>
+
+        <div class="card right-top">
+          <div class="score-row">
+            <div class="score-box banker"><div class="score-h" data-fit="13,9" data-i18n="banker">BANKER</div><div id="topBanker" data-fit="34,18" class="score-v">0</div></div>
+            <div class="score-box board"><div class="score-h" data-fit="13,9" data-i18n="boardNumber">BOARD NUMBER</div><div id="boardValue" data-fit="34,18" class="score-v">33</div></div>
+            <div class="score-box player"><div class="score-h" data-fit="13,9" data-i18n="player">PLAYER</div><div id="topPlayer" data-fit="34,18" class="score-v">0</div></div>
+          </div>
+          <div class="tables-row">
+            <div class="side-table">
+              <div class="side-head"><div class="side-chip banker">B</div><div class="side-title" data-fit="14,9" data-i18n="banker">BANKER</div><div id="sideBanker" data-fit="24,14" class="side-total">0</div></div>
+              <div class="side-body">
+                <div class="side-item"><div class="side-label" data-i18n="bankerPair">Banker Pair</div><div id="cur1" class="side-cur">TZS</div><div id="val1" class="side-val" data-fit="12,8">11:1</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="tie">Tie</div><div id="cur2" class="side-cur">TZS</div><div id="val2" class="side-val" data-fit="12,8">8:1</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="currentStreak">Current Streak</div><div class="side-cur">—</div><div id="val3" class="side-val" data-fit="12,8">—</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="longestStreak">Longest Streak</div><div class="side-cur">—</div><div id="val4" class="side-val" data-fit="12,8">—</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="handNumber">Hand</div><div class="side-cur">—</div><div id="val5" class="side-val" data-fit="12,8">000</div></div>
+              </div>
+            </div>
+            <div class="side-table">
+              <div class="side-head"><div class="side-chip player">P</div><div class="side-title" data-fit="14,9" data-i18n="player">PLAYER</div><div id="sidePlayer" data-fit="24,14" class="side-total">0</div></div>
+              <div class="side-body">
+                <div class="side-item"><div class="side-label" data-i18n="playerPair">Player Pair</div><div id="cur6" class="side-cur">TZS</div><div id="val6" class="side-val" data-fit="12,8">11:1</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="tie">Tie</div><div id="cur7" class="side-cur">TZS</div><div id="val7" class="side-val" data-fit="12,8">8:1</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="shoeNumber">Shoe Number</div><div class="side-cur">—</div><div id="val8" class="side-val" data-fit="12,8">001</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="brand">Brand</div><div class="side-cur">—</div><div id="val9" class="side-val" data-fit="12,8">PREMIER</div></div>
+                <div class="side-item"><div class="side-label" data-i18n="table">Table</div><div class="side-cur">—</div><div id="val10" class="side-val" data-fit="12,8">B01</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="big-zone">
+        <div id="bigWrap" class="pale"><canvas id="bigCanvas"></canvas></div>
+      </section>
+
+      <section class="bottom-zone">
+        <div class="left-stack">
+          <div id="bigEyeWrap" class="pale" style="position:relative"><span class="label-inside" data-i18n="bigEye" style="left:10px;top:8px">Big Eye</span><canvas id="bigEyeCanvas"></canvas></div>
+          <div id="cockWrap" class="pale" style="position:relative"><span class="label-inside" data-i18n="cockroach" style="left:10px;top:8px">Cockroach</span><canvas id="cockCanvas"></canvas></div>
+        </div>
+        <div id="smallWrap" class="pale" style="position:relative"><span class="label-inside label-centered" data-i18n="smallRoad" style="top:8px">Small Road</span><canvas id="smallCanvas"></canvas></div>
+      </section>
+
+      <div class="footer">
+        <div class="footer-left">1=PLAYER · 2=BANKER · 3=TIE · 4=PLAYER PAIR · 5=BANKER PAIR · 0=NEW SHOE</div>
+        <div id="announcementText" data-fit="15,10" class="footer-center">Welcome To Baccarat Games, Good Luck!</div>
+        <div id="pendingText" data-fit="14,9" class="footer-right">READY</div>
+      </div>
+    </div>
+
+    <div id="resultOverlay" class="overlay">
+      <div class="overlay-inner">
+        <div id="overlayLetter" class="overlay-letter">B</div>
+        <div id="overlayWord" class="overlay-word">BANKER</div>
+        <div id="overlaySub" class="overlay-sub"></div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-title" data-i18n="settingsTitle">Display Settings</div>
+        <div class="modal-desc" data-i18n="settingsDesc">This version does not show hand cards. It records only the winner result (Player / Banker / Tie) and optional pair flags.</div>
+        <div class="form-grid">
+          <label><span data-i18n="brand">Brand</span><input id="setBrand" value="PREMIER"></label>
+          <label><span data-i18n="logoUpload">Custom Logo</span><input id="setLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>
+          <label><span data-i18n="table">Table</span><input id="setTable" value="TABLE B01"></label>
+          <label><span data-i18n="boardNumber">Board Number</span><input id="setBoard" type="number" value="33" min="1"></label>
+          <label><span data-i18n="min">Min</span><input id="setMin" value="5"></label>
+          <label><span data-i18n="max">Max</span><input id="setMax" value="10,000"></label>
+          <label><span data-i18n="currency">Currency</span><input id="setCurrency" value="TZS"></label>
+          <label><span data-i18n="shoeNumber">Shoe Number</span><input id="setShoe" type="number" value="1" min="1"></label>
+          <label class="full"><span data-i18n="announcement">Announcement</span><input id="setAnnouncement" value="Welcome To Baccarat Games, Good Luck!"></label>
+        </div>
+        <div class="modal-actions">
+          <button id="clearLogoBtn" class="modal-btn secondary" data-i18n="clearLogo">Clear Logo</button>
+          <button id="cancelSettingsBtn" class="modal-btn secondary" data-i18n="cancel">Cancel</button>
+          <button id="saveSettingsBtn" class="modal-btn primary" data-i18n="save">Save</button>
+        </div>
+        <div class="note" data-i18n="note">The layout is now built as a fixed 1920×1080 stage to prevent fields from shifting or collapsing. The entire screen scales proportionally to the monitor.</div>
+      </div>
+    </div>
+
+    <div id="confirmModal" class="modal hidden">
+      <div class="modal-card" style="max-width:420px">
+        <div class="modal-title" data-i18n="newShoeTitle">Start New Shoe?</div>
+        <div class="modal-desc" data-i18n="newShoeDesc">Current roads will be cleared and the shoe number will increase by 1.</div>
+        <div class="modal-actions">
+          <button id="cancelNewShoeBtn" class="modal-btn secondary" data-i18n="cancel">Cancel</button>
+          <button id="confirmNewShoeBtn" class="modal-btn danger" data-i18n="confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.BaccaratEngine = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  function normalizeHands(hands) {
+    return (hands || []).map((h, i) => ({id: h.id || i + 1,outcome: h.outcome,playerPair: !!h.playerPair,bankerPair: !!h.bankerPair,ts: h.ts || null})).filter(h => ['P', 'B', 'T'].includes(h.outcome));
+  }
+  function logicalColumns(hands) {
+    const cols = [];
+    for (const h of normalizeHands(hands)) {
+      if (h.outcome === 'T') continue;
+      const last = cols[cols.length - 1];
+      if (!last || last.outcome !== h.outcome) cols.push({ outcome: h.outcome, hands: [h] });
+      else last.hands.push(h);
+    }
+    return cols;
+  }
+  function placeRoadMarks(marks, rows = 6) {
+    const grid = new Map(), cells = []; let lastMark = null, streakStartCol = 0, lastCell = null;
+    const occupied = (c, r) => grid.has(`${c},${r}`);
+    for (let i = 0; i < marks.length; i++) {
+      const mark = marks[i]; let col, row;
+      if (!lastCell) { col = 0; row = 0; streakStartCol = 0; }
+      else if (mark === lastMark) {
+        const down = lastCell.row + 1;
+        if (down < rows && !occupied(lastCell.col, down)) { col = lastCell.col; row = down; }
+        else { col = lastCell.col + 1; row = lastCell.row; while (occupied(col, row)) col++; }
+      } else { col = streakStartCol + 1; row = 0; while (occupied(col, row)) col++; streakStartCol = col; }
+      const cell = { index: i, mark, col, row }; cells.push(cell); grid.set(`${col},${row}`, cell); lastCell = cell; lastMark = mark;
+    }
+    return { cells, maxCol: cells.reduce((m, c) => Math.max(m, c.col), 0), grid };
+  }
+  function buildBigRoad(hands) {
+    const hs = normalizeHands(hands), decisive = []; let pendingTies = 0, pendingTiePairs = { playerPair:false, bankerPair:false };
+    for (const h of hs) {
+      if (h.outcome === 'T') {
+        if (decisive.length) {
+          const prev = decisive[decisive.length - 1];
+          prev.tieCount = (prev.tieCount || 0) + 1;
+          prev.tiePlayerPair = prev.tiePlayerPair || h.playerPair;
+          prev.tieBankerPair = prev.tieBankerPair || h.bankerPair;
+        } else {
+          pendingTies++; pendingTiePairs.playerPair ||= h.playerPair; pendingTiePairs.bankerPair ||= h.bankerPair;
+        }
+        continue;
+      }
+      const item = { outcome:h.outcome, playerPair:h.playerPair, bankerPair:h.bankerPair, tieCount:pendingTies, tiePlayerPair:pendingTiePairs.playerPair, tieBankerPair:pendingTiePairs.bankerPair };
+      pendingTies = 0; pendingTiePairs = { playerPair:false, bankerPair:false }; decisive.push(item);
+    }
+    const placement = placeRoadMarks(decisive.map(x => x.outcome));
+    return { cells: placement.cells.map((c, i) => ({ ...c, ...decisive[i] })), maxCol: placement.maxCol, initialTieCount: decisive.length ? 0 : pendingTies };
+  }
+  function derivedMarks(hands, offset) {
+    const cols = logicalColumns(hands), marks = [];
+    for (let c = 0; c < cols.length; c++) {
+      const currentLen = cols[c].hands.length;
+      for (let r = 1; r <= currentLen; r++) {
+        if (r === 1) {
+          if (c < offset + 1) continue;
+          const a = cols[c - offset].hands.length, b = cols[c - offset - 1].hands.length;
+          marks.push(a === b ? 'R' : 'U');
+        } else {
+          if (c < offset) continue;
+          const refLen = cols[c - offset].hands.length, sameRowExists = refLen >= r, aboveExists = refLen >= (r - 1);
+          marks.push(sameRowExists === aboveExists ? 'R' : 'U');
+        }
+      }
+    }
+    return marks;
+  }
+  function buildDerivedRoad(hands, offset) {
+    const marks = derivedMarks(hands, offset), placement = placeRoadMarks(marks);
+    return { marks, cells: placement.cells, maxCol: placement.maxCol };
+  }
+  function beadCells(hands) { return normalizeHands(hands).map((h, i) => ({ ...h, row: i % 6, col: Math.floor(i / 6) })); }
+  function stats(hands) {
+    const hs = normalizeHands(hands), total = hs.length, banker = hs.filter(h => h.outcome === 'B').length, player = hs.filter(h => h.outcome === 'P').length, tie = hs.filter(h => h.outcome === 'T').length, bankerPair = hs.filter(h => h.bankerPair).length, playerPair = hs.filter(h => h.playerPair).length;
+    const decisive = hs.filter(h => h.outcome !== 'T'); let currentStreak = { outcome:null, count:0 }, maxStreak = { outcome:null, count:0 };
+    for (const h of decisive) { if (h.outcome === currentStreak.outcome) currentStreak.count++; else currentStreak = { outcome:h.outcome, count:1 }; if (currentStreak.count > maxStreak.count) maxStreak = { ...currentStreak }; }
+    return { total, banker, player, tie, bankerPair, playerPair, currentStreak, maxStreak };
+  }
+  return { normalizeHands, logicalColumns, placeRoadMarks, buildBigRoad, buildDerivedRoad, beadCells, stats };
+});
+</script>
+<script>
+(() => {
+'use strict';
+const E = window.BaccaratEngine;
+const STORAGE = 'premier-baccarat-display-v2';
+const defaultSettings = { brand:'PREMIER', logoData:'', table:'TABLE B01', board:33, min:'5', max:'10,000', currency:'TZS', announcement:'Welcome To Baccarat Games, Good Luck!', shoe:1, lang:'en' };
+const I18N = {
+  en:{min:'MIN',max:'MAX',banker:'BANKER',player:'PLAYER',tie:'Tie',shoeNumber:'Shoe Number',handNumber:'Hand',boardNumber:'BOARD NUMBER',bankerPair:'Banker Pair',playerPair:'Player Pair',currentStreak:'Current Streak',longestStreak:'Longest Streak',bigEye:'Big Eye',smallRoad:'Small Road',cockroach:'Cockroach',settingsTitle:'Display Settings',settingsDesc:'This version does not show hand cards. It records only the winner result (Player / Banker / Tie) and optional pair flags.',brand:'Brand',logoUpload:'Custom Logo',table:'Table',currency:'Currency',announcement:'Announcement',clearLogo:'Clear Logo',cancel:'Cancel',save:'Save',confirm:'Confirm',newShoeTitle:'Start New Shoe?',newShoeDesc:'Current roads will be cleared and the shoe number will increase by 1.',note:'The layout is now built as a fixed 1920×1080 stage to prevent fields from shifting or collapsing. The entire screen scales proportionally to the monitor.',settingsSaved:'Settings saved',nothingUndo:'Nothing to undo',ready:'READY',nextHand:'NEXT HAND',newShoe:'NEW SHOE'},
+  zh:{min:'最小',max:'最大',banker:'庄家',player:'闲家',tie:'和局',shoeNumber:'靴号',handNumber:'局号',boardNumber:'台号',bankerPair:'庄对',playerPair:'闲对',currentStreak:'当前连胜',longestStreak:'最长连胜',bigEye:'大眼路',smallRoad:'小路',cockroach:'小强路',settingsTitle:'显示设置',settingsDesc:'此版本不显示牌面。系统只记录结果：闲 / 庄 / 和，以及可选对子标记。',brand:'品牌',logoUpload:'自定义标志',table:'台名',currency:'货币',announcement:'公告字幕',clearLogo:'清除标志',cancel:'取消',save:'保存',confirm:'确认',newShoeTitle:'开始新靴？',newShoeDesc:'当前路单将被清空，靴号会自动加 1。',note:'当前界面已改为固定 1920×1080 画布结构，避免之前那种元素下滑、挤压和错位。整个画面会按比例缩放到显示器。',settingsSaved:'设置已保存',nothingUndo:'没有可撤销的记录',ready:'准备',nextHand:'下一局',newShoe:'新靴'}
+};
+const $ = id => document.getElementById(id);
+const state = loadState();
+if(new URLSearchParams(location.search).has('stress')){
+  state.settings = {...state.settings, brand:'PREMIER INTERNATIONAL', table:'TABLE BACCARAT 12', board:999, min:'100,000', max:'100,000,000', currency:'TZS', shoe:999, announcement:'Welcome To Baccarat Games, Good Luck!  欢迎光临 · Please place your bets'};
+  state.hands = [];
+  const seq=[]; for(let i=0;i<118;i++) seq.push(i<18?'B':(i%7===0?'T':(i%3===0?'P':'B')));
+  state.hands = seq.map((outcome,i)=>({id:i+1,outcome,playerPair:i%17===0,bankerPair:i%19===0,ts:null}));
+}
+
+const canvases = { bead:$('beadCanvas'), big:$('bigCanvas'), bigEye:$('bigEyeCanvas'), cock:$('cockCanvas'), small:$('smallCanvas') };
+const COLORS = { B:'#d72d2d', P:'#216ce1', T:'#39b84c', R:'#d72d2d', U:'#216ce1', grid:'#dbe5ec' };
+let pendingLogoData = null, toastTimer = null, overlayTimer = null;
+function loadState(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(STORAGE) || 'null');
+    if(raw) return { hands: raw.hands || [], history: raw.history || [], pendingPlayerPair: !!raw.pendingPlayerPair, pendingBankerPair: !!raw.pendingBankerPair, settings: { ...defaultSettings, ...(raw.settings || {}) } };
+  }catch{}
+  return { hands: [], history: [], pendingPlayerPair:false, pendingBankerPair:false, settings:{ ...defaultSettings } };
+}
+function saveState(){ localStorage.setItem(STORAGE, JSON.stringify(state)); }
+function tr(k){ return (I18N[state.settings.lang] || I18N.en)[k] || I18N.en[k] || k; }
+function outcomeText(o, short=false){ if(o==='B') return short?'B':tr('banker'); if(o==='P') return short?'P':tr('player'); if(o==='T') return short?'T':tr('tie'); return '—'; }
+function fitStage(){
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const scale = Math.min(vw / 1920, vh / 1080);
+  const stage = $('stage');
+  stage.style.position = 'absolute';
+  stage.style.left = '50%';
+  stage.style.top = '50%';
+  stage.style.transformOrigin = 'center center';
+  stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+}
+
+function fitText(el){
+  if(!el || !el.dataset.fit) return;
+  const [maxRaw,minRaw] = el.dataset.fit.split(',');
+  const max = Number(maxRaw)||14, min = Number(minRaw)||8;
+  let size = max;
+  el.style.fontSize = size + 'px';
+  el.style.letterSpacing = '';
+  let guard = 0;
+  while((el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) && size > min && guard++ < 80){
+    size -= .5;
+    el.style.fontSize = size + 'px';
+  }
+  if((el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) && el.id === 'brandText'){
+    el.style.letterSpacing = '.05em';
+    size = max;
+    el.style.fontSize = size + 'px';
+    guard = 0;
+    while((el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1) && size > min && guard++ < 80){ size -= .5; el.style.fontSize = size + 'px'; }
+  }
+}
+function fitAllText(){ document.querySelectorAll('[data-fit]').forEach(fitText); }
+function auditOverflow(){
+  const bad=[];
+  document.querySelectorAll('#stage *').forEach(el=>{
+    if(el.tagName==='CANVAS' || el.classList.contains('modal') || el.closest('.modal.hidden')) return;
+    const cs=getComputedStyle(el);
+    if(cs.display==='none' || cs.visibility==='hidden') return;
+    if(el.clientWidth>0 && el.clientHeight>0 && (el.scrollWidth>el.clientWidth+1 || el.scrollHeight>el.clientHeight+1)){
+      bad.push({id:el.id||'', cls:el.className||'', text:(el.textContent||'').trim().slice(0,80), cw:el.clientWidth, sw:el.scrollWidth, ch:el.clientHeight, sh:el.scrollHeight});
+    }
+  });
+  window.__overflowAudit = bad;
+  document.documentElement.dataset.overflowCount = String(bad.length);
+  return bad;
+}
+function showToast(msg){ const el = $('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(()=>el.classList.remove('show'), 1100); }
+function showOverlay(hand){ const ov = $('resultOverlay'); ov.className = 'overlay show ' + (hand.outcome==='B'?'banker':hand.outcome==='P'?'player':'tie'); $('overlayLetter').textContent = outcomeText(hand.outcome, true); $('overlayWord').textContent = outcomeText(hand.outcome, false); const extras = []; if(hand.playerPair) extras.push(tr('playerPair')); if(hand.bankerPair) extras.push(tr('bankerPair')); $('overlaySub').textContent = extras.join(' · '); clearTimeout(overlayTimer); overlayTimer = setTimeout(()=>{ ov.className = 'overlay'; }, 1350); }
+function addHand(outcome){ const hand = { id: Date.now(), outcome, playerPair: state.pendingPlayerPair, bankerPair: state.pendingBankerPair, ts: new Date().toISOString() }; state.hands.push(hand); state.pendingPlayerPair = false; state.pendingBankerPair = false; saveState(); render(); showOverlay(hand); }
+function undo(){ if(!state.hands.length) return showToast(tr('nothingUndo')); state.hands.pop(); saveState(); render(); showToast('UNDO'); }
+function togglePair(type){ if(type==='P') state.pendingPlayerPair = !state.pendingPlayerPair; else state.pendingBankerPair = !state.pendingBankerPair; saveState(); renderPending(); }
+function requestNewShoe(){ $('confirmModal').classList.remove('hidden'); }
+function confirmNewShoe(){ if(state.hands.length) state.history.unshift({ shoe: state.settings.shoe, hands: state.hands.slice(), endedAt: new Date().toISOString() }); state.hands = []; state.pendingPlayerPair = false; state.pendingBankerPair = false; state.settings.shoe = Math.max(1, Number(state.settings.shoe) || 1) + 1; saveState(); $('confirmModal').classList.add('hidden'); render(); showToast(tr('newShoe')); }
+function applyLanguage(){ document.documentElement.lang = state.settings.lang==='zh' ? 'zh-CN' : 'en'; document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = tr(el.dataset.i18n)); $('langEn').classList.toggle('active', state.settings.lang==='en'); $('langZh').classList.toggle('active', state.settings.lang==='zh'); $('settingsBtn').textContent = state.settings.lang==='zh' ? '设置' : 'SETTINGS'; }
+function renderBrand(){ const img = $('customLogo'), txt = $('brandText'), name = (state.settings.brand || 'PREMIER').trim() || 'PREMIER'; if(state.settings.logoData){ img.src = state.settings.logoData; img.classList.remove('hidden'); txt.classList.add('hidden'); } else { img.removeAttribute('src'); img.classList.add('hidden'); txt.classList.remove('hidden'); txt.textContent = name; } $('val9').textContent = name; }
+function tick(){ $('clock').textContent = new Date().toLocaleTimeString('en-GB', { hour12:false }); }
+function setupCanvas(canvas){ const rect = canvas.getBoundingClientRect(); const dpr = Math.max(1, window.devicePixelRatio || 1); const w = Math.max(40, Math.floor(rect.width)), h = Math.max(40, Math.floor(rect.height)); canvas.width = Math.floor(w*dpr); canvas.height = Math.floor(h*dpr); const ctx = canvas.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); return { ctx, w, h }; }
+function gridMetrics(w,h,desiredCols){ const cell = Math.max(12, Math.floor(Math.min(w/desiredCols, h/6))); return { cell, cols: Math.max(1, Math.floor(w/cell)) }; }
+function drawGrid(ctx,w,h,cell){ ctx.strokeStyle = COLORS.grid; ctx.lineWidth = 1; ctx.beginPath(); for(let y=0;y<=6;y++){ const py = Math.round(y*cell)+.5; ctx.moveTo(0,py); ctx.lineTo(w,py);} for(let x=0;x<=Math.ceil(w/cell);x++){ const px = Math.round(x*cell)+.5; ctx.moveTo(px,0); ctx.lineTo(px,Math.min(h,6*cell)); } ctx.stroke(); }
+function windowStart(maxCol, visibleCols){ return Math.max(0, maxCol - visibleCols + 1); }
+function drawPairDots(ctx,x,y,r,pPair,bPair){ if(bPair){ ctx.beginPath(); ctx.arc(x+r*.7, y-r*.64, Math.max(2, r*.16), 0, Math.PI*2); ctx.fillStyle = COLORS.B; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); } if(pPair){ ctx.beginPath(); ctx.arc(x-r*.7, y+r*.64, Math.max(2, r*.16), 0, Math.PI*2); ctx.fillStyle = COLORS.P; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke(); } }
+function drawBead(){ const {ctx,w,h}=setupCanvas(canvases.bead), m=gridMetrics(w,h,15); ctx.clearRect(0,0,w,h); drawGrid(ctx,w,h,m.cell); const cells = E.beadCells(state.hands), maxCol = cells.length ? cells[cells.length-1].col : 0, start = windowStart(maxCol, m.cols); for(const c of cells){ if(c.col<start || c.col>=start+m.cols) continue; const x=(c.col-start+.5)*m.cell, y=(c.row+.5)*m.cell, r=m.cell*.35; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle = COLORS[c.outcome]; ctx.fill(); ctx.fillStyle='#fff'; ctx.font=`900 ${Math.max(10,m.cell*.24)}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(outcomeText(c.outcome,true),x,y+1); drawPairDots(ctx,x,y,r,c.playerPair,c.bankerPair);} }
+function drawBig(){ const {ctx,w,h}=setupCanvas(canvases.big), road=E.buildBigRoad(state.hands), m=gridMetrics(w,h,48); ctx.clearRect(0,0,w,h); drawGrid(ctx,w,h,m.cell); const start = windowStart(road.maxCol,m.cols); if(!road.cells.length && road.initialTieCount){ const x=m.cell*.5,y=m.cell*.5,r=m.cell*.32; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.strokeStyle=COLORS.T; ctx.lineWidth=Math.max(2,m.cell*.07); ctx.stroke(); ctx.fillStyle=COLORS.T; ctx.font=`900 ${m.cell*.24}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(road.initialTieCount),x,y); } for(const c of road.cells){ if(c.col<start||c.col>=start+m.cols) continue; const x=(c.col-start+.5)*m.cell, y=(c.row+.5)*m.cell, r=m.cell*.34; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.strokeStyle=COLORS[c.outcome]; ctx.lineWidth=Math.max(2,m.cell*.085); ctx.stroke(); if(c.tieCount){ ctx.strokeStyle=COLORS.T; ctx.lineWidth=Math.max(2,m.cell*.055); ctx.beginPath(); ctx.moveTo(x-r*.7,y+r*.7); ctx.lineTo(x+r*.7,y-r*.7); ctx.stroke(); if(c.tieCount>1){ ctx.fillStyle=COLORS.T; ctx.font=`900 ${Math.max(8,m.cell*.18)}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(c.tieCount),x,y); }} drawPairDots(ctx,x,y,r,c.playerPair||c.tiePlayerPair,c.bankerPair||c.tieBankerPair); } }
+function drawDerived(canvas,offset,style,desiredCols){ const {ctx,w,h}=setupCanvas(canvas), road=E.buildDerivedRoad(state.hands,offset), m=gridMetrics(w,h,desiredCols); ctx.clearRect(0,0,w,h); drawGrid(ctx,w,h,m.cell); const start = windowStart(road.maxCol,m.cols); for(const c of road.cells){ if(c.col<start||c.col>=start+m.cols) continue; const x=(c.col-start+.5)*m.cell, y=(c.row+.5)*m.cell, r=m.cell*.28, color=COLORS[c.mark]; ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=Math.max(2,m.cell*.07); if(style==='ring'){ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke(); } else if(style==='dot'){ ctx.beginPath(); ctx.arc(x,y,r*.74,0,Math.PI*2); ctx.fill(); } else { ctx.beginPath(); ctx.moveTo(x-r*.72,y+r*.72); ctx.lineTo(x+r*.72,y-r*.72); ctx.stroke(); } } }
+function renderBars(stats){ const total = Math.max(1, stats.total); const b = (stats.banker/total)*100, p=(stats.player/total)*100, t=(stats.tie/total)*100; $('stripeBanker').style.width = `${Math.max(10,b)}%`; $('stripePlayer').style.width = `${Math.max(10,p)}%`; $('stripeTie').style.width = `${Math.max(8,t || 6)}%`; $('stripeBanker').textContent = `B ${b.toFixed(1)}%`; $('stripePlayer').textContent = `P ${p.toFixed(1)}%`; $('stripeTie').textContent = `T ${t.toFixed(1)}%`; }
+function renderStatic(){ $('tableText').textContent = state.settings.table; $('minValue').textContent = state.settings.min; $('maxValue').textContent = state.settings.max; $('boardValue').textContent = state.settings.board; $('announcementText').textContent = state.settings.announcement; document.querySelectorAll('.side-cur').forEach(el=>{ if(el.textContent !== '—') el.textContent = state.settings.currency; }); $('val8').textContent = String(state.settings.shoe).padStart(3,'0'); $('val10').textContent = state.settings.table.replace(/^TABLE\s*/i,''); renderBrand(); }
+function renderStats(){ const s = E.stats(state.hands); $('topBanker').textContent = s.banker; $('topPlayer').textContent = s.player; $('sideBanker').textContent = s.banker; $('sidePlayer').textContent = s.player; $('statTie').textContent = s.tie; $('statBPair').textContent = s.bankerPair; $('statPPair').textContent = s.playerPair; $('shoeValue').textContent = String(state.settings.shoe).padStart(3,'0'); $('handValue').textContent = String(s.total).padStart(3,'0'); $('val5').textContent = String(s.total).padStart(3,'0'); const cur = s.currentStreak.count ? `${outcomeText(s.currentStreak.outcome)} × ${s.currentStreak.count}` : '—'; const max = s.maxStreak.count ? `${outcomeText(s.maxStreak.outcome)} × ${s.maxStreak.count}` : '—'; $('currentStreak').textContent = cur; $('maxStreak').textContent = max; $('val3').textContent = s.currentStreak.count ? `${s.currentStreak.outcome}×${s.currentStreak.count}` : '—'; $('val4').textContent = s.maxStreak.count ? `${s.maxStreak.outcome}×${s.maxStreak.count}` : '—'; renderBars(s); }
+function renderPending(){ const parts = []; if(state.pendingPlayerPair) parts.push(tr('playerPair')); if(state.pendingBankerPair) parts.push(tr('bankerPair')); $('pendingText').textContent = parts.length ? `${tr('nextHand')}: ${parts.join(' + ')}` : tr('ready'); }
+function render(){ applyLanguage(); renderStatic(); renderStats(); renderPending(); tick(); fitStage(); drawBead(); drawBig(); drawDerived(canvases.bigEye,1,'ring',18); drawDerived(canvases.cock,3,'slash',18); drawDerived(canvases.small,2,'dot',30); requestAnimationFrame(()=>{ fitAllText(); requestAnimationFrame(auditOverflow); }); }
+function openSettings(){ pendingLogoData = null; $('setBrand').value = state.settings.brand; $('setTable').value = state.settings.table; $('setBoard').value = state.settings.board; $('setMin').value = state.settings.min; $('setMax').value = state.settings.max; $('setCurrency').value = state.settings.currency; $('setShoe').value = state.settings.shoe; $('setAnnouncement').value = state.settings.announcement; $('setLogo').value = ''; $('settingsModal').classList.remove('hidden'); }
+function saveSettings(){ state.settings.brand = $('setBrand').value.trim() || 'PREMIER'; if(pendingLogoData !== null) state.settings.logoData = pendingLogoData; state.settings.table = $('setTable').value.trim() || 'TABLE B01'; state.settings.board = Math.max(1, Number($('setBoard').value) || 1); state.settings.min = $('setMin').value.trim() || '5'; state.settings.max = $('setMax').value.trim() || '10,000'; state.settings.currency = $('setCurrency').value.trim() || 'TZS'; state.settings.shoe = Math.max(1, Number($('setShoe').value) || 1); state.settings.announcement = $('setAnnouncement').value.trim() || defaultSettings.announcement; saveState(); $('settingsModal').classList.add('hidden'); render(); showToast(tr('settingsSaved')); }
+$('langEn').onclick=()=>{ state.settings.lang='en'; saveState(); render(); };
+$('langZh').onclick=()=>{ state.settings.lang='zh'; saveState(); render(); };
+$('settingsBtn').onclick=openSettings;
+$('cancelSettingsBtn').onclick=()=>$('settingsModal').classList.add('hidden');
+$('saveSettingsBtn').onclick=saveSettings;
+$('clearLogoBtn').onclick=()=>{ pendingLogoData=''; state.settings.logoData=''; saveState(); render(); };
+$('cancelNewShoeBtn').onclick=()=>$('confirmModal').classList.add('hidden');
+$('confirmNewShoeBtn').onclick=confirmNewShoe;
+$('setLogo').addEventListener('change', e=>{ const file=e.target.files && e.target.files[0]; if(!file) return; const r=new FileReader(); r.onload=()=>{ pendingLogoData = String(r.result || ''); }; r.readAsDataURL(file); });
+document.addEventListener('keydown', e=>{
+  if(!$('settingsModal').classList.contains('hidden') || !$('confirmModal').classList.contains('hidden')){ if(e.key==='Escape'){ $('settingsModal').classList.add('hidden'); $('confirmModal').classList.add('hidden'); } return; }
+  if(e.repeat) return;
+  const code=e.code, k=e.key.toLowerCase();
+  if(code==='Numpad1' || e.key==='1'){ addHand('P'); e.preventDefault(); }
+  else if(code==='Numpad2' || e.key==='2'){ addHand('B'); e.preventDefault(); }
+  else if(code==='Numpad3' || e.key==='3'){ addHand('T'); e.preventDefault(); }
+  else if(code==='Numpad4' || e.key==='4'){ togglePair('P'); e.preventDefault(); }
+  else if(code==='Numpad5' || e.key==='5'){ togglePair('B'); e.preventDefault(); }
+  else if(code==='Numpad0' || e.key==='0'){ requestNewShoe(); e.preventDefault(); }
+  else if(e.key==='Backspace'){ undo(); e.preventDefault(); }
+  else if(k==='s'){ openSettings(); e.preventDefault(); }
+  else if(k==='l'){ state.settings.lang = state.settings.lang==='zh' ? 'en' : 'zh'; saveState(); render(); e.preventDefault(); }
+});
+window.addEventListener('resize', ()=>{ fitStage(); requestAnimationFrame(render); });
+setInterval(tick, 1000);
+fitStage(); render();
+})();
+</script>
+</body>
+</html>

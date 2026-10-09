@@ -1,0 +1,48 @@
+name: premier-progressive-local-test
+services:
+  db:
+    image: postgres:16
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: progressive
+      POSTGRES_USER: progressive
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run start script first}
+    volumes: [database:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U progressive -d progressive']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  app:
+    image: premier-progressive:local-test
+    build: .
+    platform: linux/amd64
+    environment:
+      DATABASE_URL: postgresql://progressive:${POSTGRES_PASSWORD}@db:5432/progressive
+      REQUIRE_TLS: '1'
+    depends_on:
+      db: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  tls:
+    image: caddy:2
+    platform: linux/amd64
+    healthcheck:
+      test: [CMD, test, -s, /data/caddy/pki/authorities/local/root.crt]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    ports: ['127.0.0.1:${PROGRESSIVE_HTTPS_PORT:-8443}:443']
+    volumes:
+      - ./deploy/windows/Caddyfile:/etc/caddy/Caddyfile:ro
+      - tls_data:/data
+      - tls_config:/config
+    depends_on:
+      app: {condition: service_healthy}
+volumes:
+  database:
+  tls_data:
+  tls_config:

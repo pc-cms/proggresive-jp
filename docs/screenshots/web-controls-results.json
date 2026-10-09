@@ -1,0 +1,13 @@
+{
+  "mouse_only_progressive": true,
+  "multiple_winning_boxes": [
+    1,
+    3
+  ],
+  "controls_inside_dialog": true,
+  "mouse_only_baccarat": true,
+  "mode_switch_preserves_history": true,
+  "no_controls_on_normal_kiosk": true,
+  "offline_blocks_commands": true,
+  "browser_errors": []
+}

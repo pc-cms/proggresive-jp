@@ -1,0 +1,20 @@
+{
+  "browser_clients": 2,
+  "sse_clients": 20,
+  "single_win_id": true,
+  "delivery_spread_ms": 228.4,
+  "two_browser_display_spread_ms": 66,
+  "same_winner_display": true,
+  "other_round_preserved": true,
+  "actual_baccarat_f4_preserves_round_and_pools": true,
+  "baccarat_input_isolated": true,
+  "winner_over_baccarat_and_return": true,
+  "baccarat_history_preserved": true,
+  "baccarat_offline_input_blocked": true,
+  "offline_block_and_reconnect": true,
+  "admin_kiosk_links": true,
+  "permanent_table_urls": true,
+  "wrong_table_credential_blocked": true,
+  "browser_errors": [],
+  "static_resource_errors": []
+}

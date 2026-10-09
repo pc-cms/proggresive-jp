@@ -1,0 +1,11 @@
+{
+  "grouped_winning_boxes": [
+    1,
+    2
+  ],
+  "one_award_per_box": true,
+  "baccarat_server_history": true,
+  "history_survives_reload": true,
+  "historical_limits_preserved": true,
+  "browser_errors": []
+}

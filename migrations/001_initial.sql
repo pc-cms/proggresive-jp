@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS schema_migrations(version integer PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS casino(id text PRIMARY KEY, state jsonb NOT NULL);
+CREATE TABLE IF NOT EXISTS principals(id text PRIMARY KEY, name text UNIQUE NOT NULL, password_hash text, role text NOT NULL, table_id text, active boolean NOT NULL DEFAULT true);
+CREATE TABLE IF NOT EXISTS sessions(token_hash text PRIMARY KEY, principal_id text REFERENCES principals(id), expires_at timestamptz NOT NULL, last_seen timestamptz NOT NULL DEFAULT now(), app_version text);
+CREATE TABLE IF NOT EXISTS login_attempts(name text PRIMARY KEY, failures integer NOT NULL, blocked_until timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS pairing(code_hash text PRIMARY KEY, table_id text NOT NULL, expires_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS commands(id text PRIMARY KEY, principal_id text NOT NULL, request_hash text NOT NULL, response jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS events(seq bigserial PRIMARY KEY, id text UNIQUE NOT NULL, casino_id text NOT NULL, kind text NOT NULL, actor text NOT NULL, table_id text, round_id text, business_date date NOT NULL, occurred_at timestamptz NOT NULL, payload jsonb NOT NULL, previous_hash text NOT NULL, hash text NOT NULL);
+CREATE FUNCTION immutable_event() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Journal is append-only'; END $$;
+CREATE TRIGGER immutable_events BEFORE UPDATE OR DELETE ON events FOR EACH ROW EXECUTE FUNCTION immutable_event();
+CREATE INDEX events_date ON events(business_date, table_id);
+CREATE INDEX events_kind ON events(kind, seq);
+INSERT INTO schema_migrations(version) VALUES(1);

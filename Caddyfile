@@ -1,0 +1,6 @@
+{$PROGRESSIVE_HOST}:443 {
+    tls internal
+    reverse_proxy app:8000 {
+        flush_interval -1
+    }
+}

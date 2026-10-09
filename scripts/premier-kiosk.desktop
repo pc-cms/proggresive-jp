@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Premier Progressive kiosk
+Exec=/opt/premier-progressive/scripts/kiosk.sh
+X-GNOME-Autostart-enabled=true

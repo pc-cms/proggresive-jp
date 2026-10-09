@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Baccarat Display</title>
+<style>
+:root{
+  --brand-red:#15181d;
+  --brand-red-2:#0e1014;
+  --light-blue:#f5f7f9;
+  --soft-gold:#aeb6bf;
+  --dark-gold:#68717b;
+  --ink:#16191d;
+  --ink-2:#262b31;
+  --paper:#f8faf9;
+  --grid:#d7dde0;
+  --muted:#75808a;
+  --banker:#d61f2c;
+  --player:#236bc2;
+  --tie:#188a55;
+  --panel:#ffffff;
+  --shadow:0 8px 28px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#e8ecee;color:var(--ink);font-family:Arial,"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif}
+body{user-select:none}
+button,input,select{font:inherit}
+#app{width:100vw;height:100vh;display:grid;grid-template-rows:88px minmax(0,1fr) 30px;background:linear-gradient(180deg,#f1f3f5 0%,#e8ebee 100%)}
+.topbar{min-width:0;display:grid;grid-template-columns:minmax(205px,270px) minmax(0,1fr) minmax(250px,330px);align-items:center;gap:18px;padding:7px 20px;background:#15181d;border-bottom:1px solid #343a42;box-shadow:0 4px 18px rgba(0,0,0,.18);color:#f5f7f9;z-index:5}
+.brand{height:72px;display:flex;align-items:center;min-width:0;padding-left:2px}
+.brand-slot{height:58px;min-width:190px;max-width:245px;display:flex;align-items:center;justify-content:flex-start;overflow:hidden}
+.brand-text{font-size:25px;line-height:1;font-weight:800;letter-spacing:.20em;color:#fff;white-space:nowrap;text-transform:uppercase}
+.custom-logo{display:block;max-width:230px;max-height:54px;object-fit:contain;object-position:left center}
+.custom-logo.hidden{display:none}
+.product-block{min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.product-title{font-size:clamp(16px,1.28vw,23px);line-height:1;font-weight:800;letter-spacing:.11em;color:var(--light-blue);white-space:nowrap}
+.product-subtitle{font-size:10px;line-height:1;letter-spacing:.23em;color:#aeb6bf;font-weight:700;text-transform:uppercase;white-space:nowrap}
+.table-line{margin-top:3px;display:flex;align-items:center;justify-content:center;gap:10px;max-width:100%;font-size:12px;line-height:1.2;color:white;font-weight:700;white-space:nowrap;overflow:hidden}
+.table-line span{overflow:hidden;text-overflow:ellipsis}
+.meta-sep{width:3px;height:3px;border-radius:50%;background:#6f7781;flex:0 0 auto}
+.header-tools{min-width:0;display:grid;grid-template-columns:auto minmax(92px,1fr);align-items:center;justify-content:end;gap:14px}
+.lang-switch{display:flex;border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:3px;background:rgba(0,0,0,.09)}
+.lang-btn{min-width:46px;height:30px;border:0;border-radius:999px;background:transparent;color:#f5f7f9;font-size:11px;font-weight:800;letter-spacing:.04em;cursor:pointer;padding:0 10px}
+.lang-btn.active{background:#f5f7f9;color:#15181d}
+.clock-wrap{text-align:right;min-width:0}
+.clock{font-variant-numeric:tabular-nums;font-size:23px;font-weight:800;line-height:1;color:white;letter-spacing:.04em}
+.shoe-label{margin-top:7px;color:#aeb6bf;font-size:10px;line-height:1;letter-spacing:.14em;font-weight:800;white-space:nowrap}
+.dashboard{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(270px,18.5vw,330px);gap:10px;padding:10px}
+.roads{min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,58fr) minmax(0,42fr);gap:10px}
+.top-roads{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(260px,30%) minmax(0,1fr);gap:10px}
+.bottom-roads{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:10px}
+.road-card{min-width:0;min-height:0;background:var(--panel);border:1px solid #cbd2d6;border-radius:8px;overflow:hidden;display:grid;grid-template-rows:32px minmax(0,1fr);box-shadow:var(--shadow)}
+.road-title{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 10px;background:#f4f7f8;border-bottom:1px solid #d8dee1;font-size:10px;line-height:1;font-weight:800;letter-spacing:.08em;color:#3b444c;text-transform:uppercase;white-space:nowrap}
+.road-title .road-name{overflow:hidden;text-overflow:ellipsis}
+.road-title .road-meta{font-size:9px;color:#879099;letter-spacing:.04em;flex:0 0 auto}
+.road-mark-demo{display:inline-flex;align-items:center;gap:5px}
+.demo-dot,.demo-ring{width:8px;height:8px;border-radius:50%;display:inline-block}.demo-dot{background:var(--brand-red)}.demo-ring{border:2px solid var(--brand-red)}
+canvas{width:100%;height:100%;display:block;background:#fff}
+.side-panel{min-width:0;min-height:0;display:grid;grid-template-rows:auto auto auto auto minmax(0,1fr);gap:8px}
+.side-card{min-width:0;background:rgba(255,255,255,.98);border:1px solid #cbd2d6;border-radius:8px;box-shadow:var(--shadow);overflow:hidden}
+.side-head{height:29px;display:flex;align-items:center;justify-content:space-between;padding:0 10px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;white-space:nowrap}
+.side-head .zh-inline{font-weight:700;color:var(--light-blue);letter-spacing:.04em}
+.last-result{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(135deg,var(--brand-red),#bb0715);color:white;min-height:72px}
+.last-result-label{font-size:9px;letter-spacing:.12em;font-weight:800;color:var(--soft-gold);text-transform:uppercase}
+.last-result-name{margin-top:4px;font-size:22px;line-height:1;font-weight:900;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.last-result-orb{width:48px;height:48px;border:4px solid rgba(255,255,255,.92);border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:900;background:rgba(0,0,0,.10)}
+.last-result.player{background:linear-gradient(135deg,#1759a4,#2679d4)}
+.last-result.tie{background:linear-gradient(135deg,#126a43,#1d9a61)}
+.outcome-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.outcome-cell{min-width:0;padding:8px 7px 7px;text-align:center;border-right:1px solid #e1e5e7}.outcome-cell:last-child{border-right:0}
+.outcome-name{font-size:9px;line-height:1.1;font-weight:800;letter-spacing:.05em;color:#667079;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.outcome-value{margin-top:3px;font-size:24px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums}.outcome-pct{margin-top:3px;font-size:9px;font-weight:700;color:#89929a;font-variant-numeric:tabular-nums}
+.outcome-cell.banker .outcome-value{color:var(--banker)}.outcome-cell.player .outcome-value{color:var(--player)}.outcome-cell.tie .outcome-value{color:var(--tie)}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr}
+.mini-stat{min-width:0;padding:8px 10px;border-right:1px solid #e2e6e8;border-bottom:1px solid #e2e6e8}.mini-stat:nth-child(even){border-right:0}.mini-stat:nth-last-child(-n+2){border-bottom:0}
+.mini-stat-label{font-size:8px;color:#7d8790;font-weight:800;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-stat-value{margin-top:3px;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.probe-wrap{padding:7px 9px 8px}
+.probe-row{display:grid;grid-template-columns:68px repeat(3,1fr);align-items:center;gap:5px;margin-bottom:5px}.probe-row:last-child{margin-bottom:0}
+.probe-label{height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;white-space:nowrap}.probe-label.player{background:var(--player)}.probe-label.banker{background:var(--banker)}
+.probe-cell{height:28px;border-radius:5px;background:#f0f3f4;border:1px solid #dbe0e3;display:grid;place-items:center}
+.probe-ring{width:12px;height:12px;border:3px solid;border-radius:50%}.probe-dot{width:9px;height:9px;border-radius:50%}.probe-slash{width:14px;height:3px;transform:rotate(-45deg);border-radius:2px}.probe-empty{font-size:12px;color:#adb4b9;font-weight:800}
+.history-card{min-height:0;display:grid;grid-template-rows:29px minmax(0,1fr)}
+.last-hands{min-height:0;padding:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-content:start;gap:6px;overflow:hidden}
+.last-chip{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:900;border:3px solid;background:#fff}.last-chip.B{color:var(--banker);border-color:var(--banker)}.last-chip.P{color:var(--player);border-color:var(--player)}.last-chip.T{color:var(--tie);border-color:var(--tie)}
+.statusbar{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 14px;background:var(--ink);color:#c9d0d4;border-top:1px solid #0c0e10;font-size:9px;line-height:1;letter-spacing:.06em}
+.status-left{min-width:0;display:flex;align-items:center;gap:8px;font-weight:800;color:var(--soft-gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status-dot{width:7px;height:7px;border-radius:50%;background:#57c985;box-shadow:0 0 0 3px rgba(87,201,133,.13);flex:0 0 auto}
+.status-right{white-space:nowrap;color:#8f999f;overflow:hidden;text-overflow:ellipsis}
+.toast{position:fixed;left:50%;bottom:48px;transform:translateX(-50%) translateY(12px);background:var(--ink);color:white;border-top:3px solid var(--soft-gold);padding:10px 18px;border-radius:5px;box-shadow:0 12px 32px rgba(0,0,0,.3);font-size:11px;font-weight:900;letter-spacing:.06em;opacity:0;pointer-events:none;transition:.16s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(10,12,14,.72);display:grid;place-items:center;z-index:60;padding:20px}.modal.hidden{display:none}.modal-card{width:min(700px,94vw);max-height:90vh;overflow:auto;background:white;border-radius:10px;box-shadow:0 30px 90px rgba(0,0,0,.45);border-top:5px solid #22272e;padding:22px}.modal-card.compact{width:min(480px,94vw)}
+.modal-title{font-size:16px;font-weight:900;letter-spacing:.06em;margin-bottom:10px;color:var(--ink)}.modal-desc{font-size:12px;line-height:1.5;color:#626d75;margin:0 0 16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.form-grid label{min-width:0;font-size:9px;font-weight:800;letter-spacing:.05em;color:#6f7a82;text-transform:uppercase}.form-grid input,.form-grid select{display:block;width:100%;height:40px;margin-top:6px;background:#f4f6f7;color:#16191d;border:1px solid #ccd3d7;border-radius:5px;padding:0 11px;font-size:13px;outline:none}.form-grid input:focus,.form-grid select:focus{border-color:#4d5661;box-shadow:0 0 0 2px rgba(77,86,97,.10)}
+.logo-tools{margin-top:10px;display:flex;align-items:center;gap:10px;min-height:30px}.logo-tools .small{padding:7px 11px;font-size:9px}.logo-file-name{min-width:0;font-size:9px;color:#7b848d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.form-grid input[type=file]{padding:8px 10px;height:40px;background:#f4f6f7}.form-grid input[type=file]::file-selector-button{margin-right:8px;border:0;border-radius:4px;background:#2a3037;color:#fff;padding:5px 9px;font-size:9px;font-weight:800;cursor:pointer}
+.key-grid{margin-top:16px;padding-top:14px;border-top:1px solid #e0e4e6;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.key-item{background:#f3f5f6;border:1px solid #d9dee1;border-radius:5px;padding:7px;text-align:center}.key-code{font-size:12px;font-weight:900;color:#20252b}.key-action{margin-top:3px;font-size:8px;font-weight:800;color:#707b83;line-height:1.15}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}button.action{border:0;border-radius:5px;padding:10px 17px;background:#20252b;color:white;font-weight:900;font-size:11px;letter-spacing:.04em;cursor:pointer}button.action.secondary{background:#e7ebed;color:#30383e}button.action.danger{background:#b91521;color:#fff}
+.brand-note{margin-top:12px;padding:9px 11px;background:#f3f5f6;border-left:3px solid #7a838d;font-size:9px;line-height:1.4;color:#5d6670}
+@media(max-width:1450px){
+  #app{grid-template-rows:78px minmax(0,1fr) 28px}.topbar{grid-template-columns:210px minmax(0,1fr) 255px;padding:6px 14px;gap:10px}.brand{height:64px}.brand-slot{height:50px;min-width:170px;max-width:205px}.brand-text{font-size:22px}.custom-logo{max-width:200px;max-height:46px}.product-title{font-size:16px}.product-subtitle{font-size:8px}.table-line{font-size:10px;gap:7px}.header-tools{gap:8px}.clock{font-size:19px}.lang-btn{min-width:40px;padding:0 7px;height:28px}.dashboard{grid-template-columns:minmax(0,1fr) 270px;gap:8px;padding:8px}.roads,.top-roads,.bottom-roads{gap:8px}.road-card{grid-template-rows:28px minmax(0,1fr)}.road-title{font-size:9px}.side-panel{gap:6px}.last-result{min-height:58px;padding:7px 10px}.last-result-name{font-size:18px}.last-result-orb{width:40px;height:40px;border-width:3px}.outcome-cell{padding:6px 4px}.outcome-value{font-size:20px}.side-head{height:26px}.history-card{grid-template-rows:26px minmax(0,1fr)}.last-hands{gap:4px;padding:6px}.last-chip{font-size:8px;border-width:2px}.probe-wrap{padding:6px}.probe-row{grid-template-columns:58px repeat(3,1fr);gap:4px}.probe-label,.probe-cell{height:24px}.mini-stat{padding:6px 8px}
+}
+@media(max-height:820px){
+  #app{grid-template-rows:74px minmax(0,1fr) 26px}.topbar{padding-top:4px;padding-bottom:4px}.brand{height:62px}.brand-slot{height:48px}.brand-text{font-size:21px}.custom-logo{max-height:44px}.dashboard{padding:7px}.road-card{grid-template-rows:26px minmax(0,1fr)}.road-title{font-size:8px}.side-panel{gap:5px}.last-result{min-height:54px;padding:5px 9px}.last-result-label{font-size:8px}.last-result-name{font-size:17px}.last-result-orb{width:38px;height:38px}.side-head{height:24px;font-size:8px}.outcome-cell{padding:5px 3px}.outcome-name{font-size:8px}.outcome-value{font-size:18px}.outcome-pct{font-size:8px}.mini-stat{padding:5px 7px}.mini-stat-label{font-size:7px}.mini-stat-value{font-size:12px}.probe-wrap{padding:5px}.probe-row{margin-bottom:3px}.probe-label,.probe-cell{height:22px;font-size:8px}.history-card{grid-template-rows:24px minmax(0,1fr)}.last-hands{grid-template-columns:repeat(6,minmax(0,1fr));padding:5px;gap:3px}.statusbar{font-size:8px}
+}
+@media(max-width:1100px){.dashboard{grid-template-columns:minmax(0,1fr) 235px}.topbar{grid-template-columns:190px minmax(0,1fr) 215px}.brand-slot{min-width:155px;max-width:180px}.brand-text{font-size:19px}.custom-logo{max-width:175px}.shoe-label{font-size:8px}.product-subtitle{display:none}.table-line{font-size:9px}.last-hands{grid-template-columns:repeat(4,minmax(0,1fr))}.status-right{display:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-slot"><img id="customLogo" class="custom-logo hidden" alt="Brand logo" /><div id="brandText" class="brand-text">PREMIER</div></div></div>
+    <div class="product-block">
+      <div class="product-title" data-i18n="title">BACCARAT SCOREBOARD</div>
+      <div class="product-subtitle" data-i18n="subtitle">CUSTOMIZABLE ROAD DISPLAY</div>
+      <div class="table-line">
+        <span id="tableName">TABLE B01</span><i class="meta-sep"></i><span id="limits">MIN 10K / MAX 5M</span>
+      </div>
+    </div>
+    <div class="header-tools">
+      <div class="lang-switch" aria-label="Language">
+        <button id="langEn" class="lang-btn active">EN</button><button id="langZh" class="lang-btn">中文</button>
+      </div>
+      <div class="clock-wrap"><div id="clock" class="clock">--:--:--</div><div id="shoeLabel" class="shoe-label">SHOE 001 · HAND 000</div></div>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <section class="roads">
+      <div class="top-roads">
+        <article class="road-card"><div class="road-title"><span class="road-name" data-i18n="bead">BEAD PLATE</span><span id="handCountTop" class="road-meta">0 HANDS</span></div><canvas id="beadCanvas"></canvas></article>
+        <article class="road-card"><div class="road-title"><span class="road-name" data-i18n="big">BIG ROAD</span><span id="streakLabel" class="road-meta">—</span></div><canvas id="bigCanvas"></canvas></article>
+      </div>
+      <div class="bottom-roads">
+        <article class="road-card"><div class="road-title"><span class="road-name" data-i18n="bigEye">BIG EYE BOY</span><span class="road-meta road-mark-demo"><i class="demo-ring"></i></span></div><canvas id="bigEyeCanvas"></canvas></article>
+        <article class="road-card"><div class="road-title"><span class="road-name" data-i18n="small">SMALL ROAD</span><span class="road-meta road-mark-demo"><i class="demo-dot"></i></span></div><canvas id="smallCanvas"></canvas></article>
+        <article class="road-card"><div class="road-title"><span class="road-name" data-i18n="cock">COCKROACH ROAD</span><span class="road-meta">╱</span></div><canvas id="cockCanvas"></canvas></article>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <section id="lastResultCard" class="side-card last-result">
+        <div><div class="last-result-label" data-i18n="lastResult">LAST RESULT</div><div id="lastResultName" class="last-result-name">—</div></div><div id="lastResultOrb" class="last-result-orb">—</div>
+      </section>
+
+      <section class="side-card">
+        <div class="side-head"><span data-i18n="shoeStats">SHOE STATISTICS</span><span id="totalHandsSide">0</span></div>
+        <div class="outcome-grid">
+          <div class="outcome-cell banker"><div class="outcome-name" data-i18n="banker">BANKER</div><div id="statBanker" class="outcome-value">0</div><div id="pctBanker" class="outcome-pct">0.0%</div></div>
+          <div class="outcome-cell player"><div class="outcome-name" data-i18n="player">PLAYER</div><div id="statPlayer" class="outcome-value">0</div><div id="pctPlayer" class="outcome-pct">0.0%</div></div>
+          <div class="outcome-cell tie"><div class="outcome-name" data-i18n="tie">TIE</div><div id="statTie" class="outcome-value">0</div><div id="pctTie" class="outcome-pct">0.0%</div></div>
+        </div>
+      </section>
+
+      <section class="side-card">
+        <div class="side-head"><span data-i18n="details">DETAILS</span><span>LIVE</span></div>
+        <div class="mini-grid">
+          <div class="mini-stat"><div class="mini-stat-label" data-i18n="bankerPair">BANKER PAIR</div><div id="statBPair" class="mini-stat-value">0</div></div>
+          <div class="mini-stat"><div class="mini-stat-label" data-i18n="playerPair">PLAYER PAIR</div><div id="statPPair" class="mini-stat-value">0</div></div>
+          <div class="mini-stat"><div class="mini-stat-label" data-i18n="currentStreakLabel">CURRENT STREAK</div><div id="currentStreak" class="mini-stat-value">—</div></div>
+          <div class="mini-stat"><div class="mini-stat-label" data-i18n="longestStreak">LONGEST STREAK</div><div id="maxStreak" class="mini-stat-value">—</div></div>
+        </div>
+      </section>
+
+      <section class="side-card">
+        <div class="side-head"><span data-i18n="probe">ROAD PROBE</span><span class="zh-inline" data-i18n="probeShort">NEXT</span></div>
+        <div class="probe-wrap">
+          <div class="probe-row"><div class="probe-label player" data-i18n="playerShort">PLAYER</div><div id="probeP1" class="probe-cell"></div><div id="probeP2" class="probe-cell"></div><div id="probeP3" class="probe-cell"></div></div>
+          <div class="probe-row"><div class="probe-label banker" data-i18n="bankerShort">BANKER</div><div id="probeB1" class="probe-cell"></div><div id="probeB2" class="probe-cell"></div><div id="probeB3" class="probe-cell"></div></div>
+        </div>
+      </section>
+
+      <section class="side-card history-card">
+        <div class="side-head"><span data-i18n="recent">RECENT RESULTS</span><span id="recentCount">0</span></div>
+        <div id="lastHands" class="last-hands"></div>
+      </section>
+    </aside>
+  </main>
+
+  <footer class="statusbar"><div class="status-left"><i class="status-dot"></i><span id="modifierState">READY</span></div><div class="status-right" data-i18n="footerHint">1 Player · 2 Banker · 3 Tie · Backspace Undo · 0 New Shoe · S Settings · L Language</div></footer>
+</div>
+<div id="toast" class="toast"></div>
+
+<div id="confirmModal" class="modal hidden"><div class="modal-card compact"><div class="modal-title" data-i18n="newShoeTitle">START NEW SHOE?</div><p class="modal-desc" data-i18n="newShoeDesc">Current road history will be cleared. The completed shoe remains stored locally.</p><div class="modal-actions"><button id="cancelNewShoe" class="action secondary" data-i18n="cancel">CANCEL</button><button id="confirmNewShoe" class="action danger" data-i18n="newShoe">NEW SHOE</button></div></div></div>
+
+<div id="settingsModal" class="modal hidden"><div class="modal-card"><div class="modal-title" data-i18n="settingsTitle">DISPLAY SETTINGS</div><p class="modal-desc" data-i18n="settingsDesc">All data is stored locally on this computer. No server or internet connection is required.</p><div class="form-grid">
+<label><span data-i18n="brandNameLabel">BRAND / LOGO TEXT</span><input id="setBrand" value="PREMIER" /></label>
+<label><span data-i18n="logoUploadLabel">CUSTOM LOGO</span><input id="setLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+<label><span data-i18n="tableNameLabel">TABLE NAME</span><input id="setTable" value="TABLE B01" /></label>
+<label><span data-i18n="limitsLabel">LIMITS TEXT</span><input id="setLimits" value="MIN 10K / MAX 5M" /></label>
+<label><span data-i18n="shoeNumber">SHOE NUMBER</span><input id="setShoe" type="number" min="1" value="1" /></label>
+</div>
+<div class="logo-tools"><button id="clearLogo" type="button" class="action secondary small" data-i18n="clearLogo">USE TEXT / CLEAR LOGO</button><span id="logoFileName" class="logo-file-name"></span></div>
+<div class="key-grid">
+<div class="key-item"><div class="key-code">1</div><div class="key-action" data-i18n="keyPlayer">PLAYER</div></div><div class="key-item"><div class="key-code">2</div><div class="key-action" data-i18n="keyBanker">BANKER</div></div><div class="key-item"><div class="key-code">3</div><div class="key-action" data-i18n="keyTie">TIE</div></div><div class="key-item"><div class="key-code">BACKSPACE</div><div class="key-action" data-i18n="keyUndo">UNDO</div></div>
+<div class="key-item"><div class="key-code">4</div><div class="key-action" data-i18n="keyPPair">PLAYER PAIR</div></div><div class="key-item"><div class="key-code">5</div><div class="key-action" data-i18n="keyBPair">BANKER PAIR</div></div><div class="key-item"><div class="key-code">0</div><div class="key-action" data-i18n="keyNew">NEW SHOE</div></div><div class="key-item"><div class="key-code">L / F11</div><div class="key-action" data-i18n="keyLangFull">LANGUAGE / FULLSCREEN</div></div>
+</div><div class="brand-note" data-i18n="brandNote">Branding is intentionally neutral and customizable. Use text or upload a logo; Banker red, Player blue and Tie green remain fixed for road readability.</div>
+<div class="modal-actions"><button id="closeSettings" class="action secondary" data-i18n="cancel">CANCEL</button><button id="saveSettings" class="action" data-i18n="save">SAVE</button></div></div></div>
+
+<script>
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.BaccaratEngine = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  function normalizeHands(hands) {
+    return (hands || []).map((h, i) => ({
+      id: h.id || i + 1,
+      outcome: h.outcome,
+      playerPair: !!h.playerPair,
+      bankerPair: !!h.bankerPair,
+      ts: h.ts || null
+    })).filter(h => ['P', 'B', 'T'].includes(h.outcome));
+  }
+
+  function logicalColumns(hands) {
+    const cols = [];
+    for (const h of normalizeHands(hands)) {
+      if (h.outcome === 'T') continue;
+      const last = cols[cols.length - 1];
+      if (!last || last.outcome !== h.outcome) {
+        cols.push({ outcome: h.outcome, hands: [h] });
+      } else {
+        last.hands.push(h);
+      }
+    }
+    return cols;
+  }
+
+  // Physical six-row road placement used by Big Road and all derived roads.
+  function placeRoadMarks(marks, rows = 6) {
+    const grid = new Map();
+    const cells = [];
+    let lastMark = null;
+    let streakStartCol = 0;
+    let lastCell = null;
+
+    const occupied = (c, r) => grid.has(`${c},${r}`);
+
+    for (let i = 0; i < marks.length; i++) {
+      const mark = marks[i];
+      let col, row;
+      if (!lastCell) {
+        col = 0; row = 0; streakStartCol = 0;
+      } else if (mark === lastMark) {
+        const downRow = lastCell.row + 1;
+        if (downRow < rows && !occupied(lastCell.col, downRow)) {
+          col = lastCell.col; row = downRow;
+        } else {
+          col = lastCell.col + 1; row = lastCell.row;
+          while (occupied(col, row)) col++;
+        }
+      } else {
+        col = streakStartCol + 1;
+        row = 0;
+        while (occupied(col, row)) col++;
+        streakStartCol = col;
+      }
+
+      const cell = { index: i, mark, col, row };
+      cells.push(cell);
+      grid.set(`${col},${row}`, cell);
+      lastCell = cell;
+      lastMark = mark;
+    }
+
+    return { cells, maxCol: cells.reduce((m, c) => Math.max(m, c.col), 0), grid };
+  }
+
+  function buildBigRoad(hands) {
+    const hs = normalizeHands(hands);
+    const decisive = [];
+    let pendingTies = 0;
+    let pendingTiePairs = { playerPair: false, bankerPair: false };
+
+    for (const h of hs) {
+      if (h.outcome === 'T') {
+        if (decisive.length) {
+          const prev = decisive[decisive.length - 1];
+          prev.tieCount = (prev.tieCount || 0) + 1;
+          prev.tiePlayerPair = prev.tiePlayerPair || h.playerPair;
+          prev.tieBankerPair = prev.tieBankerPair || h.bankerPair;
+        } else {
+          pendingTies++;
+          pendingTiePairs.playerPair ||= h.playerPair;
+          pendingTiePairs.bankerPair ||= h.bankerPair;
+        }
+        continue;
+      }
+      const item = {
+        outcome: h.outcome,
+        playerPair: h.playerPair,
+        bankerPair: h.bankerPair,
+        tieCount: pendingTies,
+        tiePlayerPair: pendingTiePairs.playerPair,
+        tieBankerPair: pendingTiePairs.bankerPair,
+        hand: h
+      };
+      pendingTies = 0;
+      pendingTiePairs = { playerPair: false, bankerPair: false };
+      decisive.push(item);
+    }
+
+    const placement = placeRoadMarks(decisive.map(x => x.outcome));
+    const cells = placement.cells.map((c, i) => ({ ...c, ...decisive[i] }));
+    return {
+      cells,
+      maxCol: placement.maxCol,
+      initialTieCount: decisive.length ? 0 : pendingTies,
+      initialTiePairs: decisive.length ? { playerPair: false, bankerPair: false } : pendingTiePairs
+    };
+  }
+
+  // Derived road rules use logical Big Road streak columns (infinite-depth convention).
+  // offset: 1 Big Eye Boy, 2 Small Road, 3 Cockroach Pig.
+  function derivedMarks(hands, offset) {
+    const cols = logicalColumns(hands);
+    const marks = [];
+    for (let c = 0; c < cols.length; c++) {
+      const currentLen = cols[c].hands.length;
+      for (let r = 1; r <= currentLen; r++) {
+        if (r === 1) {
+          if (c < offset + 1) continue;
+          const a = cols[c - offset].hands.length;
+          const b = cols[c - offset - 1].hands.length;
+          marks.push(a === b ? 'R' : 'U');
+        } else {
+          if (c < offset) continue;
+          const refLen = cols[c - offset].hands.length;
+          const sameRowExists = refLen >= r;
+          const aboveExists = refLen >= (r - 1);
+          marks.push(sameRowExists === aboveExists ? 'R' : 'U');
+        }
+      }
+    }
+    return marks;
+  }
+
+  function buildDerivedRoad(hands, offset) {
+    const marks = derivedMarks(hands, offset);
+    const placement = placeRoadMarks(marks);
+    return { marks, cells: placement.cells, maxCol: placement.maxCol };
+  }
+
+  function beadCells(hands) {
+    return normalizeHands(hands).map((h, i) => ({ ...h, row: i % 6, col: Math.floor(i / 6) }));
+  }
+
+  function stats(hands) {
+    const hs = normalizeHands(hands);
+    const total = hs.length;
+    const banker = hs.filter(h => h.outcome === 'B').length;
+    const player = hs.filter(h => h.outcome === 'P').length;
+    const tie = hs.filter(h => h.outcome === 'T').length;
+    const bankerPair = hs.filter(h => h.bankerPair).length;
+    const playerPair = hs.filter(h => h.playerPair).length;
+    const decisive = hs.filter(h => h.outcome !== 'T');
+    let currentStreak = { outcome: null, count: 0 };
+    let maxStreak = { outcome: null, count: 0 };
+    for (const h of decisive) {
+      if (h.outcome === currentStreak.outcome) currentStreak.count++;
+      else currentStreak = { outcome: h.outcome, count: 1 };
+      if (currentStreak.count > maxStreak.count) maxStreak = { ...currentStreak };
+    }
+    return { total, banker, player, tie, bankerPair, playerPair, currentStreak, maxStreak };
+  }
+
+  return {
+    normalizeHands,
+    logicalColumns,
+    placeRoadMarks,
+    buildBigRoad,
+    derivedMarks,
+    buildDerivedRoad,
+    beadCells,
+    stats
+  };
+});
+</script>
+<script>
+(() => {
+'use strict';
+const E = window.BaccaratEngine;
+const STORAGE = 'baccarat-display-v3';
+const I18N = {
+  en:{title:'BACCARAT SCOREBOARD',subtitle:'CUSTOMIZABLE ROAD DISPLAY',bead:'BEAD PLATE',big:'BIG ROAD',bigEye:'BIG EYE BOY',small:'SMALL ROAD',cock:'COCKROACH ROAD',lastResult:'LAST RESULT',shoeStats:'SHOE STATISTICS',details:'DETAILS',probe:'ROAD PROBE',probeShort:'NEXT',recent:'RECENT RESULTS',banker:'BANKER',player:'PLAYER',tie:'TIE',bankerShort:'BANKER',playerShort:'PLAYER',bankerPair:'BANKER PAIR',playerPair:'PLAYER PAIR',currentStreakLabel:'CURRENT STREAK',longestStreak:'LONGEST STREAK',footerHint:'1 Player · 2 Banker · 3 Tie · Backspace Undo · 0 New Shoe · S Settings · L Language',newShoeTitle:'START NEW SHOE?',newShoeDesc:'Current road history will be cleared. The completed shoe remains stored locally.',cancel:'CANCEL',newShoe:'NEW SHOE',settingsTitle:'DISPLAY SETTINGS',settingsDesc:'All data is stored locally on this computer. Branding can be customized without changing the baccarat road logic.',brandNameLabel:'BRAND / LOGO TEXT',logoUploadLabel:'CUSTOM LOGO',clearLogo:'USE TEXT / CLEAR LOGO',tableNameLabel:'TABLE NAME',limitsLabel:'LIMITS TEXT',shoeNumber:'SHOE NUMBER',keyPlayer:'PLAYER',keyBanker:'BANKER',keyTie:'TIE',keyUndo:'UNDO',keyPPair:'PLAYER PAIR',keyBPair:'BANKER PAIR',keyNew:'NEW SHOE',keyLangFull:'LANGUAGE / FULLSCREEN',brandNote:'Branding is intentionally neutral and customizable. Use text or upload a logo; Banker red, Player blue and Tie green remain fixed for road readability.',save:'SAVE',ready:'READY',nextHand:'NEXT HAND',hands:'HANDS',hand:'HAND',shoe:'SHOE',settingsSaved:'SETTINGS SAVED',nothingUndo:'NOTHING TO UNDO',undo:'UNDO',pairPlayer:'PLAYER PAIR',pairBanker:'BANKER PAIR'},
+  zh:{title:'百家乐路单',subtitle:'可定制路单显示系统',bead:'珠盘路',big:'大路',bigEye:'大眼路',small:'小路',cock:'小强路',lastResult:'上一局结果',shoeStats:'本靴统计',details:'详细统计',probe:'路单预测',probeShort:'下一局',recent:'最近结果',banker:'庄家',player:'闲家',tie:'和局',bankerShort:'庄',playerShort:'闲',bankerPair:'庄对',playerPair:'闲对',currentStreakLabel:'当前连胜',longestStreak:'最长连胜',footerHint:'1 闲 · 2 庄 · 3 和 · Backspace 撤销 · 0 新靴 · S 设置 · L 语言',newShoeTitle:'开始新一靴？',newShoeDesc:'当前路单将被清空，已完成的靴牌会保存在本机历史记录中。',cancel:'取消',newShoe:'新靴',settingsTitle:'显示设置',settingsDesc:'所有数据仅保存在本机。品牌可独立自定义，不影响百家乐路单逻辑。',brandNameLabel:'品牌 / 标志文字',logoUploadLabel:'自定义标志',clearLogo:'使用文字 / 清除标志',tableNameLabel:'台号',limitsLabel:'限红显示',shoeNumber:'靴号',keyPlayer:'闲家',keyBanker:'庄家',keyTie:'和局',keyUndo:'撤销',keyPPair:'闲对',keyBPair:'庄对',keyNew:'新靴',keyLangFull:'语言 / 全屏',brandNote:'界面品牌已改为中性且可自定义。可使用文字或上传标志；庄红、闲蓝、和绿保持固定，便于快速识别。',save:'保存',ready:'准备',nextHand:'下一局',hands:'局',hand:'局',shoe:'靴',settingsSaved:'设置已保存',nothingUndo:'没有可撤销的结果',undo:'撤销',pairPlayer:'闲对',pairBanker:'庄对'}
+};
+const defaultState={hands:[],pendingPlayerPair:false,pendingBankerPair:false,settings:{brand:'PREMIER',logoData:'',logoName:'',table:'TABLE B01',limits:'MIN 10K / MAX 5M',shoe:1,lang:'en'},history:[]};
+let state=loadState(); let toastTimer=null;
+const $=id=>document.getElementById(id);
+const canvases={bead:$('beadCanvas'),big:$('bigCanvas'),bigEye:$('bigEyeCanvas'),small:$('smallCanvas'),cock:$('cockCanvas')};
+function clone(v){return JSON.parse(JSON.stringify(v))}
+function loadState(){try{const raw=JSON.parse(localStorage.getItem(STORAGE)||localStorage.getItem('premier-baccarat-v2')||localStorage.getItem('premier-baccarat-v1')||'null');const fresh=raw?{...clone(defaultState),...raw,settings:{...defaultState.settings,...(raw.settings||{})}}:clone(defaultState);if(new URLSearchParams(location.search).has('demo')&&!fresh.hands.length){const sample=['B','B','P','P','P','T','B','P','B','B','B','B','P','P','T','P','B','B','P','P','P','P','P','B','T','B','P','B','P','P','B','B','B','P','P','P','B','T','B','B','P','B'];fresh.hands=sample.map((outcome,i)=>({id:i+1,outcome,playerPair:[7,22,35].includes(i),bankerPair:[4,15,29].includes(i),ts:null}))}return fresh}catch{return clone(defaultState)}}
+function saveState(){try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch{}}
+function tr(k){return (I18N[state.settings.lang||'en']||I18N.en)[k]||I18N.en[k]||k}
+function applyLanguage(){const lang=state.settings.lang==='zh'?'zh':'en';document.documentElement.lang=lang==='zh'?'zh-CN':'en';document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=tr(el.dataset.i18n)});$('langEn').classList.toggle('active',lang==='en');$('langZh').classList.toggle('active',lang==='zh');renderHeader();renderModifier();renderStats();renderLastResult()}
+function setLang(lang){state.settings.lang=lang;saveState();applyLanguage();render()}
+function toggleLang(){setLang(state.settings.lang==='zh'?'en':'zh')}
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1150)}
+function outcomeName(o,short=false){if(o==='B')return short?(state.settings.lang==='zh'?'庄':'B'):tr('banker');if(o==='P')return short?(state.settings.lang==='zh'?'闲':'P'):tr('player');if(o==='T')return short?(state.settings.lang==='zh'?'和':'T'):tr('tie');return '—'}
+function addHand(outcome){state.hands.push({id:Date.now(),outcome,playerPair:state.pendingPlayerPair,bankerPair:state.pendingBankerPair,ts:new Date().toISOString()});state.pendingPlayerPair=false;state.pendingBankerPair=false;saveState();render();toast(outcomeName(outcome))}
+function undo(){if(!state.hands.length)return toast(tr('nothingUndo'));const h=state.hands.pop();saveState();render();toast(`${tr('undo')} ${outcomeName(h.outcome)}`)}
+function togglePair(type){if(type==='P')state.pendingPlayerPair=!state.pendingPlayerPair;else state.pendingBankerPair=!state.pendingBankerPair;saveState();renderModifier()}
+function requestNewShoe(){$('confirmModal').classList.remove('hidden')}
+function newShoe(){if(state.hands.length){state.history.unshift({shoe:state.settings.shoe,endedAt:new Date().toISOString(),hands:state.hands});state.history=state.history.slice(0,50)}state.hands=[];state.pendingPlayerPair=false;state.pendingBankerPair=false;state.settings.shoe=Number(state.settings.shoe||1)+1;saveState();$('confirmModal').classList.add('hidden');render();toast(tr('newShoe'))}
+function renderModifier(){const parts=[];if(state.pendingPlayerPair)parts.push(tr('pairPlayer'));if(state.pendingBankerPair)parts.push(tr('pairBanker'));$('modifierState').textContent=parts.length?`${tr('nextHand')}: ${parts.join(' + ')}`:tr('ready')}
+function setupCanvas(canvas){const rect=canvas.getBoundingClientRect();const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));const w=Math.max(10,Math.floor(rect.width)),h=Math.max(10,Math.floor(rect.height));if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr)}const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return{ctx,w,h}}
+const COLORS={B:'#d61f2c',P:'#236bc2',T:'#188a55',R:'#d61f2c',U:'#236bc2',grid:'#d9dee1',text:'#20262b'};
+function gridMetrics(w,h,preferredCols,rows=6){const cellH=h/rows;const cols=Math.max(1,Math.floor(w/cellH));const visibleCols=Math.max(preferredCols||1,cols);const cell=Math.min(cellH,w/visibleCols);return{cell,cols:Math.max(1,Math.floor(w/cell))}}
+function drawGrid(ctx,w,h,cell){ctx.strokeStyle=COLORS.grid;ctx.lineWidth=1;ctx.beginPath();for(let y=0;y<=6;y++){const py=Math.round(y*cell)+.5;ctx.moveTo(0,py);ctx.lineTo(w,py)}for(let x=0;x<=Math.ceil(w/cell);x++){const px=Math.round(x*cell)+.5;ctx.moveTo(px,0);ctx.lineTo(px,Math.min(h,6*cell))}ctx.stroke()}
+function windowStart(maxCol,visibleCols){return Math.max(0,maxCol-visibleCols+1)}
+function drawPairDots(ctx,x,y,r,pPair,bPair){if(bPair){ctx.beginPath();ctx.arc(x+r*.72,y-r*.68,Math.max(2,r*.16),0,Math.PI*2);ctx.fillStyle=COLORS.B;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke()}if(pPair){ctx.beginPath();ctx.arc(x-r*.72,y+r*.68,Math.max(2,r*.16),0,Math.PI*2);ctx.fillStyle=COLORS.P;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke()}}
+function drawBead(){const{ctx,w,h}=setupCanvas(canvases.bead),m=gridMetrics(w,h,12);drawGrid(ctx,w,h,m.cell);const cells=E.beadCells(state.hands),maxCol=cells.length?cells[cells.length-1].col:0,start=windowStart(maxCol,m.cols);for(const c of cells){if(c.col<start||c.col>=start+m.cols)continue;const x=(c.col-start+.5)*m.cell,y=(c.row+.5)*m.cell,r=m.cell*.34;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=COLORS[c.outcome];ctx.fill();ctx.fillStyle='#fff';ctx.font=`800 ${Math.max(9,m.cell*.23)}px Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(outcomeName(c.outcome,true),x,y+1);drawPairDots(ctx,x,y,r,c.playerPair,c.bankerPair)}}
+function drawBig(){const{ctx,w,h}=setupCanvas(canvases.big),road=E.buildBigRoad(state.hands),m=gridMetrics(w,h,40);drawGrid(ctx,w,h,m.cell);const start=windowStart(road.maxCol,m.cols);if(!road.cells.length&&road.initialTieCount){const x=m.cell*.5,y=m.cell*.5,r=m.cell*.32;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle=COLORS.T;ctx.lineWidth=Math.max(2,m.cell*.07);ctx.stroke();ctx.fillStyle=COLORS.T;ctx.font=`800 ${m.cell*.24}px Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(road.initialTieCount),x,y)}for(const c of road.cells){if(c.col<start||c.col>=start+m.cols)continue;const x=(c.col-start+.5)*m.cell,y=(c.row+.5)*m.cell,r=m.cell*.33;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.strokeStyle=COLORS[c.outcome];ctx.lineWidth=Math.max(2,m.cell*.075);ctx.stroke();if(c.tieCount){ctx.strokeStyle=COLORS.T;ctx.lineWidth=Math.max(2,m.cell*.055);ctx.beginPath();ctx.moveTo(x-r*.68,y+r*.68);ctx.lineTo(x+r*.68,y-r*.68);ctx.stroke();if(c.tieCount>1){ctx.fillStyle=COLORS.T;ctx.font=`800 ${Math.max(8,m.cell*.19)}px Arial`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(c.tieCount),x,y)}}drawPairDots(ctx,x,y,r,c.playerPair||c.tiePlayerPair,c.bankerPair||c.tieBankerPair)}}
+function drawDerived(canvas,offset,style){const{ctx,w,h}=setupCanvas(canvas),road=E.buildDerivedRoad(state.hands,offset),m=gridMetrics(w,h,30);drawGrid(ctx,w,h,m.cell);const start=windowStart(road.maxCol,m.cols);for(const c of road.cells){if(c.col<start||c.col>=start+m.cols)continue;const x=(c.col-start+.5)*m.cell,y=(c.row+.5)*m.cell,r=m.cell*.27,color=COLORS[c.mark];ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=Math.max(2,m.cell*.07);if(style==='ring'){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke()}else if(style==='dot'){ctx.beginPath();ctx.arc(x,y,r*.7,0,Math.PI*2);ctx.fill()}else{ctx.beginPath();ctx.moveTo(x-r*.68,y+r*.68);ctx.lineTo(x+r*.68,y-r*.68);ctx.stroke()}}}
+function renderStats(){const s=E.stats(state.hands),total=s.total||1;$('statBanker').textContent=s.banker;$('statPlayer').textContent=s.player;$('statTie').textContent=s.tie;$('statBPair').textContent=s.bankerPair;$('statPPair').textContent=s.playerPair;$('pctBanker').textContent=(s.banker/total*100).toFixed(1)+'%';$('pctPlayer').textContent=(s.player/total*100).toFixed(1)+'%';$('pctTie').textContent=(s.tie/total*100).toFixed(1)+'%';$('handCountTop').textContent=state.settings.lang==='zh'?`${s.total} ${tr('hands')}`:`${s.total} ${s.total===1?tr('hand'):tr('hands')}`;$('totalHandsSide').textContent=s.total;const streak=s.currentStreak.count?`${outcomeName(s.currentStreak.outcome)} × ${s.currentStreak.count}`:'—';$('streakLabel').textContent=streak;$('currentStreak').textContent=streak;$('currentStreak').style.color=s.currentStreak.outcome==='B'?COLORS.B:s.currentStreak.outcome==='P'?COLORS.P:'#20262b';$('maxStreak').textContent=s.maxStreak.count?`${outcomeName(s.maxStreak.outcome)} × ${s.maxStreak.count}`:'—';const last=state.hands.slice(-15).reverse();$('recentCount').textContent=last.length;$('lastHands').innerHTML=last.map(h=>`<div class="last-chip ${h.outcome}" title="${outcomeName(h.outcome)}">${outcomeName(h.outcome,true)}${h.playerPair||h.bankerPair?'•':''}</div>`).join('')}
+function renderLastResult(){const h=state.hands[state.hands.length-1],card=$('lastResultCard'),name=$('lastResultName'),orb=$('lastResultOrb');card.classList.remove('player','tie');if(!h){name.textContent='—';orb.textContent='—';return}if(h.outcome==='P')card.classList.add('player');if(h.outcome==='T')card.classList.add('tie');name.textContent=outcomeName(h.outcome);orb.textContent=outcomeName(h.outcome,true)}
+function roadProbe(outcome){const before=[1,2,3].map(o=>E.buildDerivedRoad(state.hands,o).marks.length);const trial=state.hands.concat([{id:'probe',outcome,playerPair:false,bankerPair:false,ts:null}]);return[1,2,3].map((o,i)=>{const marks=E.buildDerivedRoad(trial,o).marks;return marks.length>before[i]?marks[marks.length-1]:null})}
+function probeHtml(mark,style){if(!mark)return'<span class="probe-empty">—</span>';const color=COLORS[mark];if(style==='ring')return`<span class="probe-ring" style="border-color:${color}"></span>`;if(style==='dot')return`<span class="probe-dot" style="background:${color}"></span>`;return`<span class="probe-slash" style="background:${color}"></span>`}
+function renderProbe(){[['P','probeP'],['B','probeB']].forEach(([o,prefix])=>{roadProbe(o).forEach((m,i)=>{$(prefix+(i+1)).innerHTML=probeHtml(m,['ring','dot','slash'][i])})})}
+let pendingLogoData=null,pendingLogoName='';
+function renderBrand(){const text=(state.settings.brand||'PREMIER').trim()||'PREMIER';const img=$('customLogo'),txt=$('brandText');if(state.settings.logoData){img.src=state.settings.logoData;img.classList.remove('hidden');txt.style.display='none';img.alt=text+' logo'}else{img.removeAttribute('src');img.classList.add('hidden');txt.style.display='block';txt.textContent=text}}
+function renderHeader(){renderBrand();const s=E.stats(state.hands);$('tableName').textContent=state.settings.table;$('limits').textContent=state.settings.limits;$('shoeLabel').textContent=state.settings.lang==='zh'?`第 ${String(state.settings.shoe||1).padStart(3,'0')} 靴 · 第 ${String(s.total).padStart(3,'0')} 局`:`SHOE ${String(state.settings.shoe||1).padStart(3,'0')} · HAND ${String(s.total).padStart(3,'0')}`}
+function render(){applyLanguage();renderHeader();renderModifier();renderStats();renderLastResult();renderProbe();drawBead();drawBig();drawDerived(canvases.bigEye,1,'ring');drawDerived(canvases.small,2,'dot');drawDerived(canvases.cock,3,'slash')}
+function openSettings(){pendingLogoData=null;pendingLogoName='';$('setBrand').value=state.settings.brand||'PREMIER';$('setTable').value=state.settings.table;$('setLimits').value=state.settings.limits;$('setShoe').value=state.settings.shoe;$('setLogo').value='';$('logoFileName').textContent=state.settings.logoName||'';$('settingsModal').classList.remove('hidden')}
+function saveSettings(){state.settings.brand=$('setBrand').value.trim()||'PREMIER';if(pendingLogoData!==null){state.settings.logoData=pendingLogoData;state.settings.logoName=pendingLogoName}state.settings.table=$('setTable').value.trim()||defaultState.settings.table;state.settings.limits=$('setLimits').value.trim()||'';state.settings.shoe=Math.max(1,Number($('setShoe').value)||1);saveState();$('settingsModal').classList.add('hidden');render();toast(tr('settingsSaved'))}
+document.addEventListener('keydown',e=>{if(!$('settingsModal').classList.contains('hidden')||!$('confirmModal').classList.contains('hidden')){if(e.key==='Escape'){$('settingsModal').classList.add('hidden');$('confirmModal').classList.add('hidden')}return}if(e.repeat)return;const code=e.code;if(code==='Numpad1'||e.key==='1'){addHand('P');e.preventDefault()}else if(code==='Numpad2'||e.key==='2'){addHand('B');e.preventDefault()}else if(code==='Numpad3'||e.key==='3'){addHand('T');e.preventDefault()}else if(code==='Numpad4'||e.key==='4'){togglePair('P');e.preventDefault()}else if(code==='Numpad5'||e.key==='5'){togglePair('B');e.preventDefault()}else if(code==='Numpad0'||e.key==='0'){requestNewShoe();e.preventDefault()}else if(e.key==='Backspace'){undo();e.preventDefault()}else if(e.key.toLowerCase()==='s'){openSettings();e.preventDefault()}else if(e.key.toLowerCase()==='l'){toggleLang();e.preventDefault()}});
+$('setLogo').addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(file.size>2*1024*1024){toast(state.settings.lang==='zh'?'标志文件不能超过 2 MB':'LOGO MUST BE UNDER 2 MB');e.target.value='';return}const reader=new FileReader();reader.onload=()=>{pendingLogoData=String(reader.result||'');pendingLogoName=file.name;$('logoFileName').textContent=file.name};reader.readAsDataURL(file)});$('clearLogo').onclick=()=>{pendingLogoData='';pendingLogoName='';$('setLogo').value='';$('logoFileName').textContent=state.settings.lang==='zh'?'将使用文字':'TEXT MODE'};
+$('langEn').onclick=()=>setLang('en');$('langZh').onclick=()=>setLang('zh');$('cancelNewShoe').onclick=()=>$('confirmModal').classList.add('hidden');$('confirmNewShoe').onclick=newShoe;$('closeSettings').onclick=()=>$('settingsModal').classList.add('hidden');$('saveSettings').onclick=saveSettings;
+window.addEventListener('resize',()=>requestAnimationFrame(render));setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('en-GB',{hour12:false})},1000);$('clock').textContent=new Date().toLocaleTimeString('en-GB',{hour12:false});render();
+})();
+</script>
+</body>
+</html>
