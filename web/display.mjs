@@ -2,14 +2,15 @@ const $=id=>document.getElementById(id),fmt=n=>n.toLocaleString('en-US');
 const names={5:'royal',4:'straight',3:'four',2:'full',1:'flush'};
 const cards={royal:[['10','♠'],['J','♠'],['Q','♠'],['K','♠'],['A','♠']],straight:[['9','♠'],['8','♠'],['7','♠'],['6','♠'],['5','♠']],four:[['A','♠'],['A','♥'],['A','♦'],['A','♣'],['K','♠']],full:[['K','♠'],['K','♥'],['K','♦'],['Q','♣'],['Q','♠']],flush:[['A','♥'],['J','♥'],['8','♥'],['5','♥'],['2','♥']]};
 const hand=id=>cards[id].map(([rank,suit])=>`<span class="card ${'♥♦'.includes(suit)?'red':''}"><span>${rank}</span><span class="suit">${suit}</span></span>`).join('');
-let configVersion=null,activeTable=null,activeEnvironment=null,currentWinner=null,inputEnabled=false;
+let configVersion=null,activeTable=null,activeEnvironment=null,currentWinner=null,inputEnabled=false,activeReloadKey=null;
 function fit(){if(!matchMedia('(max-width:800px) and (orientation:portrait)').matches)$('stage').style.transform=`translate(-50%,-50%) scale(${Math.min(innerWidth/1920,innerHeight/1080)})`;fitMoney()}
 function fitMoney(){for(const el of document.querySelectorAll('.money')){el.style.fontSize='';let size=parseFloat(getComputedStyle(el).fontSize);while(el.scrollWidth>el.clientWidth+1&&size>22){size-=2;el.style.fontSize=size+'px'}}}
 export function clearDisplay(){activeTable=null;configVersion=null;$('tierGrid').replaceChildren();$('fixedGrid').replaceChildren();$('boxes').replaceChildren();$('meter-royal').textContent='—';$('tableName').textContent='';$('baccarat').hidden=true;$('stage').hidden=false;$('winner').hidden=true;currentWinner=null}
-function sendTable(){if(!activeTable)return;const t=activeTable;$('baccarat').contentWindow?.postMessage({type:'premier-table',table_id:t.id,name:t.name,number:t.number,minimum:t.minimum,maximum:t.maximum,baccarat:t.baccarat,test_controls:activeEnvironment==='test'&&new URLSearchParams(location.search).get('test_controls')==='1',enabled:inputEnabled&&t.mode==='baccarat'&&!currentWinner},location.origin)}
+function sendTable(){if(!activeTable)return;const t=activeTable;$('baccarat').contentWindow?.postMessage({type:'premier-table',table_id:t.id,name:t.name,number:t.number,minimum:t.minimum,maximum:t.maximum,baccarat:t.baccarat,reload_key:activeReloadKey,test_controls:activeEnvironment==='test'&&new URLSearchParams(location.search).get('test_controls')==='1',enabled:inputEnabled&&t.mode==='baccarat'&&!currentWinner},location.origin)}
 window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===$('baccarat').contentWindow&&e.data?.type==='premier-ready'&&e.data.table_id===activeTable?.id)sendTable()});
-export function renderDisplay(state,t,r,selected,enabled){
+export function renderDisplay(state,t,r,selected,enabled,reloadCode=null){
  inputEnabled=enabled;
+ activeReloadKey=reloadCode;
  activeTable=t;activeEnvironment=state.environment;$('tableName').textContent=`${t.name} · ${t.number} · ${t.boxes} BOXES`;
  if(configVersion!==state.config.version){
   configVersion=state.config.version;$('tierGrid').replaceChildren();$('fixedGrid').replaceChildren();
@@ -20,6 +21,7 @@ export function renderDisplay(state,t,r,selected,enabled){
   }
  }
  for(const tier of state.config.tiers)$('meter-'+names[tier.code]).textContent=fmt(state.pools[tier.code]);
+ $('boxes').style.setProperty('--box-columns',String(Math.min(t.boxes,7)));
  $('boxes').replaceChildren(...Array.from({length:t.boxes},(_,i)=>{const n=i+1,on=r?.boxes.includes(n),chosen=selected.has(n),won=state.claims.some(c=>c.round_id===r?.id&&c.box===n&&c.status==='approved');const box=document.createElement('button');box.type='button';box.className='box'+(on?' on selected locked':chosen?' selected':'')+(won?' won':'');box.innerHTML=`<b>${n}</b><span>${won?'AWARDED':on?'ACTIVE':chosen?'SELECTED':'OFF'}</span>`;box.setAttribute('aria-pressed',String(!!(on||chosen)));return box}));
  const bacc=t.mode==='baccarat';$('stage').hidden=bacc;$('baccarat').hidden=!bacc;
  if(bacc&&!$('baccarat').getAttribute('src'))$('baccarat').src='/static/baccarat/index.html?table_id='+t.id;

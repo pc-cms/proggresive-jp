@@ -1,4 +1,31 @@
-# Проверки — 8 октября 2026, Africa/Dar_es_Salaam
+# Проверки
+
+## 21 ноября 2026 — launcher и обновление экрана
+
+Основа этой ветки — `pc-cms/proggresive-jp`, main `4e66b5f8c3999ad39b0b6301b66814543ea6f2c9` от 9 октября. Remote содержит только эту main, без tags. Более поздний отчёт о TEST V9 от 14 октября указывает commit `e0518fe0238d148c2191e1f5da16f8c72949e6b3`; его нет в этом remote, исходный repo/branch из отчёта неизвестен. Совместимость с фактически установленным V9 ещё не подтверждена. Изменения 21 ноября локальные, не развёрнуты; production release не выполнялся.
+
+Исправлены повторные launcher restart loops, завершение собственного браузера при штатной остановке launcher, явное обновление экрана с opt-in клавишей и отображение пяти боксов без двух пустых колонок. F4 остаётся переключением Progressive/Baccarat. Сервер, DB schema, суммы, sequence и протокол lease не менялись.
+
+Проверки не требуют БД, сети, реального профиля или дисплея:
+
+```sh
+python tests/kiosk_launcher_test.py
+node tests/keys.test.mjs
+node --experimental-vm-modules --test tests/terminal_reload.test.mjs
+sh -n scripts/kiosk.sh
+git diff --check
+```
+
+- **3 process tests PASS**: дублирующий launcher не создаёт второй Chromium; завершившийся браузер перезапускается, штатная остановка launcher убирает его browser и освобождает lock; другой профиль продолжает работать. Используются временные профили и подставные X11/Chromium процессы. До исправления тест duplicate autostart воспроизвёл проблему: второй launcher не завершался.
+- **8 module integration tests PASS**: реальный `terminal.mjs`/`keys.mjs`/Baccarat bridge исполняется в Node VM с подставными DOM/API границами. Обновление не отправляет денежную команду и сохраняет подтверждённый round ID/пулы/заявки; новая страница соблюдает старую 15-секундную lease; неизвестный результат сохраняет ID/sequence и восстанавливается без новой операции; reload не прерывает in-flight запрос; origin/source/table/configured-key проверяются для iframe; F4 и opt-in mapping сохранены. Второе отвергнутое сообщение Baccarat больше не снимает busy первого запроса: отдельный regression FAIL на прежнем handler (reload происходил), PASS после исправления. Fixture сохранности содержит непустую approved claim.
+- **Physical-key logic PASS**: Num Lock off через `event.code`, repeat, input/PIN и Ctrl/Alt/Meta guards, свободный optional reload key. Это синтетические события, не аппаратная USB-проверка.
+- Shell syntax и whitespace checks PASS.
+
+Chromium smoke был заблокирован средой при создании process singleton socket: `Operation not permitted`. Это не browser PASS. Реальный рендер, touch, reboot/автовход mini-PC, NumPad, vendor/custom LED, офлайн-реклама и production backend integration не проверялись. Изолированного PostgreSQL/Docker здесь нет; существующие backend fixtures не запускались и реальные данные не трогались. Визуальная приёмка пяти колонок должна пройти на стенде после сопоставления исходников V9.
+
+Описанные ниже октябрьские результаты — прежняя история, их нельзя считать повторным прогоном 21 ноября.
+
+## Проверки — 8 октября 2026, Africa/Dar_es_Salaam
 
 Проверялся новый серверный код в пустом checkout, PostgreSQL 16 в Docker, Python 3.12, Chromium headless, изолированные TEST базы. Получены и проверены опубликованные экраны Progressive/Baccarat, шрифты, фоны, графика и галерея 11 MP4; см. SOURCE_RECONCILIATION.md. Реальных ставок, CMS migrations или изменений arucms не было.
 
